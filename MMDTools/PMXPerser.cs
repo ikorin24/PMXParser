@@ -35,7 +35,7 @@ namespace MMDTools
             ParseMorph(stream, localInfo.Encoding, localInfo.VertexIndexSize, localInfo.BoneIndexSize, localInfo.MaterialIndexSize);
             ParseDisplayFrame(stream, localInfo.Encoding, localInfo.BoneIndexSize, localInfo.MorphIndexSize);
             ParseRigidBody(stream, localInfo.Encoding, localInfo.BoneIndexSize);
-            ParseJoint(stream);
+            ParseJoint(stream, localInfo.Encoding, localInfo.RigidBodyIndexSize);
             if(localInfo.Version == FormatVersion.V20) { return pmx; }
 
             // PMX version >= 2.1
@@ -135,9 +135,7 @@ namespace MMDTools
         {
             var surfaceCount = stream.NextInt32();
             for(int i = 0; i < surfaceCount; i++) {
-                var surface0 = stream.NextDataOfSize((byte)vertexIndexSize);
-                var surface1 = stream.NextDataOfSize((byte)vertexIndexSize);
-                var surface2 = stream.NextDataOfSize((byte)vertexIndexSize);
+                var vertex = stream.NextDataOfSize((byte)vertexIndexSize);
             }
         }
 
@@ -362,9 +360,24 @@ namespace MMDTools
             }
         }
 
-        private void ParseJoint(Stream stream)
+        private void ParseJoint(Stream stream, Encoding encoding, IndexSize rigidBodyIndexSize)
         {
-
+            var jointCount = stream.NextInt32();
+            for(int i = 0; i < jointCount; i++) {
+                var jointName = stream.NextString(stream.NextInt32(), encoding);
+                var jointNameEn = stream.NextString(stream.NextInt32(), encoding);
+                var jointType = (JointType)stream.NextByte();
+                var rigidBodyA = stream.NextDataOfSize((byte)rigidBodyIndexSize);
+                var rigidBodyB = stream.NextDataOfSize((byte)rigidBodyIndexSize);
+                var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationRadian = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var translationMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var translationMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationRadianMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationRadianMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var translationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+            }
         }
 
         private void ParseSoftBody(Stream stream)

@@ -369,4 +369,9 @@ namespace MMDTools
         Dynamic = 1,
         DynamicAndBonePosition = 2,
     }
+
+    public enum JointType : byte
+    {
+        Spring6DOF = 0,
+    }
 }
