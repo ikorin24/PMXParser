@@ -234,6 +234,38 @@ namespace MMDTools
         }
     }
 
+    public struct DisplayFrameElement : IEquatable<DisplayFrameElement>
+    {
+        public DisplayFrameElementTarget TargetType;
+        public int TargetIndex;
+
+        public override bool Equals(object? obj)
+        {
+            return obj is DisplayFrameElement element && Equals(element);
+        }
+
+        public bool Equals(DisplayFrameElement other)
+        {
+            return TargetType == other.TargetType &&
+                   TargetIndex == other.TargetIndex;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(TargetType, TargetIndex);
+        }
+
+        public static bool operator ==(DisplayFrameElement left, DisplayFrameElement right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DisplayFrameElement left, DisplayFrameElement right)
+        {
+            return !(left == right);
+        }
+    }
+
     [Flags]
     public enum MaterialDrawFlag : byte
     {
@@ -316,5 +348,25 @@ namespace MMDTools
     {
         Normal,
         Special,
+    }
+
+    public enum DisplayFrameElementTarget : byte
+    {
+        Bone = 0,
+        Morph = 1,
+    }
+
+    public enum RigidBodyShape : byte
+    {
+        Sphere = 0,
+        Box = 1,
+        Capsule = 2,
+    }
+
+    public enum RigidBodyPhysicsType : byte
+    {
+        Static = 0,
+        Dynamic = 1,
+        DynamicAndBonePosition = 2,
     }
 }

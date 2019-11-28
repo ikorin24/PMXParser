@@ -33,8 +33,8 @@ namespace MMDTools
             ParseMaterial(stream, localInfo.Encoding, localInfo.TextureIndexSize);
             ParseBone(stream, localInfo.Encoding, localInfo.BoneIndexSize);
             ParseMorph(stream, localInfo.Encoding, localInfo.VertexIndexSize, localInfo.BoneIndexSize, localInfo.MaterialIndexSize);
-            ParseDisplayFrame(stream, localInfo.Encoding);
-            ParseRigidBody(stream);
+            ParseDisplayFrame(stream, localInfo.Encoding, localInfo.BoneIndexSize, localInfo.MorphIndexSize);
+            ParseRigidBody(stream, localInfo.Encoding, localInfo.BoneIndexSize);
             ParseJoint(stream);
             if(localInfo.Version == FormatVersion.V20) { return pmx; }
 
@@ -318,20 +318,48 @@ namespace MMDTools
             }
         }
 
-        private void ParseDisplayFrame(Stream stream, Encoding encoding)
+        private void ParseDisplayFrame(Stream stream, Encoding encoding, IndexSize boneIndexSize, IndexSize morphIndexSize)
         {
             var displayFrameCount = stream.NextInt32();
             for(int i = 0; i < displayFrameCount; i++) {
                 var displayFrameName = stream.NextString(stream.NextInt32(), encoding);
                 var displayFrameNameEn = stream.NextString(stream.NextInt32(), encoding);
                 var type = (DisplayFrameType)stream.NextByte();
-                throw new NotImplementedException();
+                var elementCount = stream.NextInt32();
+                for(int j = 0; j < elementCount; j++) {
+                    var element = new DisplayFrameElement();
+                    element.TargetType = (DisplayFrameElementTarget)stream.NextByte();
+                    element.TargetIndex = element.TargetType switch
+                    {
+                        DisplayFrameElementTarget.Bone => stream.NextDataOfSize((byte)boneIndexSize),
+                        DisplayFrameElementTarget.Morph => stream.NextDataOfSize((byte)morphIndexSize),
+                        _ => throw new FormatException("Invalid element type"),
+                    };
+                }
             }
         }
 
-        private void ParseRigidBody(Stream stream)
+        private void ParseRigidBody(Stream stream, Encoding encoding, IndexSize boneIndexSize)
         {
-
+            var rigidBodyCount = stream.NextInt32();
+            for(int i = 0; i < rigidBodyCount; i++) {
+                var rigidBodyName = stream.NextString(stream.NextInt32(), encoding);
+                var rigidBodyNameEn = stream.NextString(stream.NextInt32(), encoding);
+                var bone = stream.NextDataOfSize((byte)boneIndexSize);
+                var hasBone = bone != -1;
+                var group = stream.NextByte();
+                var collisionInvisibleFlag = stream.NextUint16();
+                var shape = (RigidBodyShape)stream.NextByte();
+                var size = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationRadian = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var mass = stream.NextSingle();
+                var translationAttenuation = stream.NextSingle();
+                var rotationAttenuation = stream.NextSingle();
+                var repulsion = stream.NextSingle();
+                var friction = stream.NextSingle();
+                var physicsType = (RigidBodyPhysicsType)stream.NextByte();
+            }
         }
 
         private void ParseJoint(Stream stream)
@@ -437,6 +465,13 @@ namespace MMDTools
             Span<byte> buf = stackalloc byte[sizeof(short)];
             Read(source, ref buf);
             return BitConverter.ToInt16(buf);
+        }
+
+        public static ushort NextUint16(this Stream source)
+        {
+            Span<byte> buf = stackalloc byte[sizeof(ushort)];
+            Read(source, ref buf);
+            return BitConverter.ToUInt16(buf);
         }
 
         public static uint NextUInt32(this Stream source)
