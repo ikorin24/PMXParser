@@ -146,11 +146,175 @@ namespace MMDTools
         }
     }
 
+    public struct Color : IEquatable<Color>
+    {
+        public float R;
+        public float G;
+        public float B;
+        public float A;
+
+        public Color(float r, float g, float b)
+        {
+            R = r;
+            G = g;
+            B = b;
+            A = 1f;
+        }
+
+        public Color(float r, float g, float b, float a)
+        {
+            R = r;
+            G = g;
+            B = b;
+            A = a;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Color color ? Equals(color) : false;
+        }
+
+        public bool Equals(Color other)
+        {
+            return R == other.R &&
+                   G == other.G &&
+                   B == other.B &&
+                   A == other.A;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(R, G, B, A);
+        }
+
+        public static bool operator ==(Color left, Color right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Color left, Color right)
+        {
+            return !(left == right);
+        }
+    }
+
+    public struct IKLink : IEquatable<IKLink>
+    {
+        public int Bone;
+        public bool IsEnableAngleLimited;
+        public Vector3 MinLimit;
+        public Vector3 MaxLimit;
+
+        public override bool Equals(object? obj)
+        {
+            return obj is IKLink link && Equals(link);
+        }
+
+        public bool Equals(IKLink other)
+        {
+            return Bone == other.Bone &&
+                   IsEnableAngleLimited == other.IsEnableAngleLimited &&
+                   MinLimit.Equals(other.MinLimit) &&
+                   MaxLimit.Equals(other.MaxLimit);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Bone, IsEnableAngleLimited, MinLimit, MaxLimit);
+        }
+
+        public static bool operator ==(IKLink left, IKLink right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(IKLink left, IKLink right)
+        {
+            return !(left == right);
+        }
+    }
+
+    [Flags]
+    public enum MaterialDrawFlag : byte
+    {
+        BothSidesDrawing =       0b00000001,
+        GroundShadow =           0b00000010,
+        DrawingInSelfShadowMap = 0b00000100,
+        SelfShadowDrawing =      0b00001000,
+        EdgeDrawing =            0b00010000,
+    }
+
+    public enum SphereTextureMode : byte
+    {
+        Disabled = 0,
+        Mult = 1,
+        Add = 2,
+        SubTexture = 3,
+    }
+
+    public enum SharedToonMode : byte
+    {
+        TextureIndex = 0,
+        SharedToon = 1,
+    }
+
+    [Flags]
+    public enum BoneFlag : short
+    {
+        ConnectionDestination = 0x0001,
+        Rotatable = 0x0002,
+        Translatable = 0x0004,
+        Visible = 0x0008,
+        Editable = 0x0010,
+        IK = 0x0020,
+        LocalAttached = 0x0080,
+        RotationAttach = 0x0100,
+        TranslationAttach = 0x0200,
+        FixedAxis = 0x0400,
+        LocalAxis = 0x0800,
+        TransformAfterPhysics = 0x1000,
+        ExternalParentTransform = 0x2000,
+    }
+
     public enum WeightTransformType : byte
     {
         BDEF1 = 0,
         BDEF2 = 1,
         BDEF4 = 2,
         SDEF = 3,
+    }
+
+    public enum MorphTarget : byte
+    {
+        SystemReserved = 0,
+        Eyebrow = 1,
+        Eye = 2,
+        Mouth = 3,
+        Other = 4,
+    }
+
+    public enum MorphType : byte
+    {
+        Group = 0,
+        Vertex = 1,
+        Bone = 2,
+        UV = 3,
+        AdditionalUV1 = 4,
+        AdditionalUV2 = 5,
+        AdditionalUV3 = 6,
+        AdditionalUV4 = 7,
+        Material = 8,
+    }
+
+    public enum MaterialMorphCalcMode : byte
+    {
+        Mult = 0,
+        Add = 1,
+    }
+
+    public enum DisplayFrameType : byte
+    {
+        Normal,
+        Special,
     }
 }

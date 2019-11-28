@@ -30,10 +30,10 @@ namespace MMDTools
             ParseVertex(stream, localInfo.AdditionalUVCount, localInfo.BoneIndexSize);
             ParseSurface(stream, localInfo.VertexIndexSize);
             ParseTexture(stream, localInfo.Encoding);
-            ParseMaterial(stream, localInfo.Encoding);
-            ParseBone(stream);
-            ParseMorph(stream);
-            ParseDisplayFrame(stream);
+            ParseMaterial(stream, localInfo.Encoding, localInfo.TextureIndexSize);
+            ParseBone(stream, localInfo.Encoding, localInfo.BoneIndexSize);
+            ParseMorph(stream, localInfo.Encoding, localInfo.VertexIndexSize, localInfo.BoneIndexSize, localInfo.MaterialIndexSize);
+            ParseDisplayFrame(stream, localInfo.Encoding);
             ParseRigidBody(stream);
             ParseJoint(stream);
             if(localInfo.Version == FormatVersion.V20) { return pmx; }
@@ -149,34 +149,184 @@ namespace MMDTools
             }
         }
 
-        private void ParseMaterial(Stream stream, Encoding encoding)
+        private void ParseMaterial(Stream stream, Encoding encoding, IndexSize textureIndexSize)
         {
             var materialCount = stream.NextInt32();
-            return;
-            throw new NotImplementedException();
             for(int i = 0; i < materialCount; i++) {
                 var name = stream.NextString(stream.NextInt32(), encoding);
                 var nameEn = stream.NextString(stream.NextInt32(), encoding);
-                var diffuce = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());        // Color(r, g, b, a) 
-                var specular = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());        // Color(r, g, b)
+                var diffuce = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var specular = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 var shininess = stream.NextSingle();
-                var ambient = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());        // Color(r, g, b)
+                var ambient = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var materialDrawFlag = (MaterialDrawFlag)stream.NextByte();
+                var edgeColor = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var edgeSize = stream.NextSingle();
+
+                var texture = stream.NextDataOfSize((byte)textureIndexSize);
+                var sphereTexture = stream.NextDataOfSize((byte)textureIndexSize);
+                var sphereTextureMode = (SphereTextureMode)stream.NextByte();
+                var sharedToonMode = (SharedToonMode)stream.NextByte();
+                switch(sharedToonMode) {
+                    case SharedToonMode.TextureIndex: {
+                        var toonTexture = stream.NextDataOfSize((byte)textureIndexSize);
+                        break;
+                    }
+                    case SharedToonMode.SharedToon: {
+                        var sharedToonTexture = stream.NextByte();
+                        break;
+                    }
+                    default:
+                        throw new FormatException("Invalid shared toon mode");
+                }
+
+                // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+                // If memo is not useful, use following code instead.
+#if true
+                var memo = stream.NextString(stream.NextInt32(), encoding);
+#else
+                stream.Skip(stream.NextInt32());
+#endif
+                // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+                var materialVertexCount = stream.NextInt32();   // always can be devided by three
             }
         }
 
-        private void ParseBone(Stream stream)
+        private void ParseBone(Stream stream, Encoding encoding, IndexSize boneIndexSize)
         {
+            var boneCount = stream.NextInt32();
+            for(int i = 0; i < boneCount; i++) {
+                var boneName = stream.NextString(stream.NextInt32(), encoding);
+                var boneNameEn = stream.NextString(stream.NextInt32(), encoding);
+                var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var parentBone = stream.NextDataOfSize((byte)boneIndexSize);
+                var transformDepth = stream.NextInt32();
+                var boneflag = (BoneFlag)stream.NextInt16();
+                if((boneflag & BoneFlag.ConnectionDestination) != BoneFlag.ConnectionDestination) {
+                    var positionOffset = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                }
+                else {
+                    var connectedBone = stream.NextDataOfSize((byte)boneIndexSize);
+                }
+                if((boneflag & BoneFlag.RotationAttach) == BoneFlag.RotationAttach ||
+                   (boneflag & BoneFlag.TranslationAttach) == BoneFlag.TranslationAttach) {
+                    var attachParent = stream.NextDataOfSize((byte)boneIndexSize);
+                    var attachRatio = stream.NextSingle();
+                }
+                if((boneflag & BoneFlag.FixedAxis) == BoneFlag.FixedAxis) {
+                    var axisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                }
+                if((boneflag & BoneFlag.LocalAxis) == BoneFlag.LocalAxis) {
+                    var xAxisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                    var zAxisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                }
+                if((boneflag & BoneFlag.ExternalParentTransform) == BoneFlag.ExternalParentTransform) {
+                    var key = stream.NextInt32();
+                }
+                if((boneflag & BoneFlag.IK) == BoneFlag.IK) {
+                    var ikTarget = stream.NextDataOfSize((byte)boneIndexSize);
+                    var iterCount = stream.NextInt32();
+                    var maxRadianPerIter = stream.NextSingle();
+                    var ikLinkCount = stream.NextInt32();
 
+                    // Stack overflow maybe happen...
+                    //Span<IKLink> ikLinks = stackalloc IKLink[ikLinkCount];
+                    const int STACK_LIMIT = 1024 * 16;
+                    Span<IKLink> ikLinks = ((uint)ikLinkCount <= STACK_LIMIT) ? stackalloc IKLink[ikLinkCount] : new IKLink[ikLinkCount];
+                    for(int j = 0; j < ikLinks.Length; j++) {
+                        ikLinks[j].Bone = stream.NextDataOfSize((byte)boneIndexSize);
+                        ikLinks[j].IsEnableAngleLimited = stream.NextByte() switch
+                        {
+                            0 => false,
+                            1 => true,
+                            _ => throw new FormatException("Invalid value"),
+                        };
+                        if(ikLinks[j].IsEnableAngleLimited) {
+                            ikLinks[j].MinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            ikLinks[j].MaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        }
+                    }
+
+                }
+            }
         }
 
-        private void ParseMorph(Stream stream)
+        private void ParseMorph(Stream stream, Encoding encoding, IndexSize vertexIndexSize, IndexSize boneIndexSize, IndexSize materialIndexSize)
         {
-
+            var morphCount = stream.NextInt32();
+            for(int i = 0; i < morphCount; i++) {
+                var morphName = stream.NextString(stream.NextInt32(), encoding);
+                var morphNameEn = stream.NextString(stream.NextInt32(), encoding);
+                var target = (MorphTarget)stream.NextByte();
+                var type = (MorphType)stream.NextByte();
+                var offsetCount = stream.NextInt32();
+                switch(type) {
+                    case MorphType.Group: {
+                        for(int j = 0; j < offsetCount; j++) {
+                            var morph = stream.NextDataOfSize((byte)vertexIndexSize);
+                            var morphRatio = stream.NextSingle();
+                        }
+                        break;
+                    }
+                    case MorphType.Vertex: {
+                        for(int j = 0; j < offsetCount; j++) {
+                            var vertex = stream.NextDataOfSize((byte)vertexIndexSize);
+                            var posOffset = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        }
+                        break;
+                    }
+                    case MorphType.Bone: {
+                        for(int j = 0; j < offsetCount; j++) {
+                            var bone = stream.NextDataOfSize((byte)boneIndexSize);
+                            var translate = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var quaternion = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        }
+                        break;
+                    }
+                    case MorphType.UV:
+                    case MorphType.AdditionalUV1:
+                    case MorphType.AdditionalUV2:
+                    case MorphType.AdditionalUV3:
+                    case MorphType.AdditionalUV4: {
+                        for(int j = 0; j < offsetCount; j++) {
+                            var vertex = stream.NextDataOfSize((byte)vertexIndexSize);
+                            var uvOffset = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        }
+                        break;
+                    }
+                    case MorphType.Material: {
+                        for(int j = 0; j < offsetCount; j++) {
+                            var material = stream.NextDataOfSize((byte)materialIndexSize);
+                            var isAllMaterialTarget = material == -1;
+                            var calcType = (MaterialMorphCalcMode)stream.NextByte();
+                            var diffuse = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var specular = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var shininess = stream.NextSingle();
+                            var ambient = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var edgeColor = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var edgeSize = stream.NextSingle();
+                            var textureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var sphereTextureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var toonTextureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
         }
 
-        private void ParseDisplayFrame(Stream stream)
+        private void ParseDisplayFrame(Stream stream, Encoding encoding)
         {
-
+            var displayFrameCount = stream.NextInt32();
+            for(int i = 0; i < displayFrameCount; i++) {
+                var displayFrameName = stream.NextString(stream.NextInt32(), encoding);
+                var displayFrameNameEn = stream.NextString(stream.NextInt32(), encoding);
+                var type = (DisplayFrameType)stream.NextByte();
+                throw new NotImplementedException();
+            }
         }
 
         private void ParseRigidBody(Stream stream)
@@ -258,6 +408,16 @@ namespace MMDTools
 
     internal static class StreamExtension
     {
+        public static void Skip(this Stream source, int byteSize)
+        {
+            // This is bad because some types of Stream throws NotSupportedException. (e.g. NetworkStream)
+            // source.Position += byteSize
+
+            // Use following instead.
+            Span<byte> buf = stackalloc byte[byteSize];
+            source.NextBytes(ref buf);
+        }
+
         public static string NextString(this Stream source, int byteSize, Encoding encoding)
         {
             Span<byte> buf = stackalloc byte[byteSize];
@@ -270,6 +430,13 @@ namespace MMDTools
             Span<byte> buf = stackalloc byte[sizeof(int)];
             Read(source, ref buf);
             return BitConverter.ToInt32(buf);
+        }
+
+        public static short NextInt16(this Stream source)
+        {
+            Span<byte> buf = stackalloc byte[sizeof(short)];
+            Read(source, ref buf);
+            return BitConverter.ToInt16(buf);
         }
 
         public static uint NextUInt32(this Stream source)
