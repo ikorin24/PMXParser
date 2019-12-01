@@ -364,7 +364,22 @@ namespace MMDTools
 
         private static void ParseJoint(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
-
+            var jointCount = stream.NextInt32();
+            for(int i = 0; i < jointCount; i++) {
+                var jointName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                var jointNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                var jointType = (JointType)stream.NextByte();
+                var rigidBodyA = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
+                var rigidBodyB = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
+                var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationRadian = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var translationMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var translationMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationRadianMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationRadianMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var translationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var rotationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+            }
         }
 
         private static void ParseSoftBody(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
