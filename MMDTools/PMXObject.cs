@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Collections.ObjectModel;
 
 namespace MMDTools
 {
@@ -16,6 +15,13 @@ namespace MMDTools
         public string Comment { get; internal set; } = string.Empty;
         /// <summary>Get English comment of pmx data</summary>
         public string CommentEnglish { get; internal set; } = string.Empty;
+
+        public ReadOnlyCollection<Vertex> VertexList { get; internal set; } = null!;
+        public ReadOnlyCollection<int> SurfaceList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<string> TextureList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<Material> MaterialList { get; internal set; } = null!;
 
         internal PMXObject()
         {
@@ -198,6 +204,88 @@ namespace MMDTools
         }
     }
 
+    public struct Vertex
+    {
+        private int _boneIndex1;
+        private int _boneIndex2;
+        private int _boneIndex3;
+        private int _boneIndex4;
+        private float _weight1;
+        private float _weight2;
+        private float _weight3;
+        private float _weight4;
+        private Vector3 _c;
+        private Vector3 _r0;
+        private Vector3 _r1;
+
+        public Vector3 Posision;
+        public Vector3 Normal;
+        public Vector2 UV;
+        public int AdditionalUVCount;
+        public Vector2 AdditionalUV1;
+        public Vector2 AdditionalUV2;
+        public Vector2 AdditionalUV3;
+        public Vector2 AdditionalUV4;
+        public WeightTransformType WeightTransformType;
+        public float EdgeRatio;
+
+        public void SetBDEF1Params(int boneIndex1)
+        {
+            _boneIndex1 = boneIndex1;
+        }
+
+        public void SetBDEF2Params(int boneIndex1, int boneIndex2, float weight1, float weight2)
+        {
+            _boneIndex1 = boneIndex1;
+            _boneIndex2 = boneIndex2;
+            _weight1 = weight1;
+            _weight2 = weight2;
+        }
+
+        public void SetBDEF4Params(int boneIndex1, int boneIndex2, int boneIndex3, int boneIndex4, float weight1, float weight2, float weight3, float weight4)
+        {
+            _boneIndex1 = boneIndex1;
+            _boneIndex2 = boneIndex2;
+            _boneIndex3 = boneIndex3;
+            _boneIndex4 = boneIndex4;
+            _weight1 = weight1;
+            _weight2 = weight2;
+            _weight3 = weight3;
+            _weight4 = weight4;
+        }
+
+        public void SetSDEFParams(int boneIndex1, int boneIndex2, float weight1, float weight2, Vector3 c, Vector3 r0, Vector3 r1)
+        {
+            _boneIndex1 = boneIndex1;
+            _boneIndex2 = boneIndex2;
+            _weight1 = weight1;
+            _weight2 = weight2;
+            _c = c;
+            _r0 = r0;
+            _r1 = r1;
+        }
+    }
+
+    public class Material
+    {
+        public string Name { get; internal set; } = string.Empty;
+        public string NameEnglish { get; internal set; } = string.Empty;
+        public Color Diffuse { get; internal set; }
+        public Color Specular { get; internal set; }
+        public float Shininess { get; internal set; }
+        public Color Ambient { get; internal set; }
+        public MaterialDrawFlag DrawFlag { get; internal set; }
+        public Color EdgeColor { get; internal set; }
+        public float EdgeSize { get; internal set; }
+        public int Texture { get; internal set; }
+        public int SphereTextre { get; internal set; }
+        public SphereTextureMode SphereTextureMode { get; internal set; }
+        public SharedToonMode SharedToonMode { get; internal set; }
+        public int ToonTexture { get; internal set; }
+        public string Memo { get; internal set; } = string.Empty;
+        public int VertexCount { get; internal set; }
+    }
+
     public struct IKLink : IEquatable<IKLink>
     {
         public int Bone;
@@ -264,6 +352,14 @@ namespace MMDTools
         {
             return !(left == right);
         }
+    }
+
+    public enum PMXVersion
+    {
+        /// <summary>PMX Ver 2.0</summary>
+        V20 = 20,
+        /// <summary>PMX Ver 2.1</summary>
+        V21 = 21,
     }
 
     [Flags]
