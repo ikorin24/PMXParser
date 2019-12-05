@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MMDTools
@@ -118,6 +119,19 @@ namespace MMDTools
                         var r0 = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         var r1 = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         vertex.SetSDEFParams(boneIndex1, boneIndex2, weight1, weight2, c, r0, r1);
+                        break;
+                    }
+                    case WeightTransformType.QDEF: {
+                        if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
+                        var boneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        var boneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        var boneIndex3 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        var boneIndex4 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        var weight1 = stream.NextSingle();
+                        var weight2 = stream.NextSingle();
+                        var weight3 = stream.NextSingle();
+                        var weight4 = stream.NextSingle();
+                        vertex.SetQDEF4Params(boneIndex1, boneIndex2, boneIndex3, boneIndex4, weight1, weight2, weight3, weight4);
                         break;
                     }
                     default:
@@ -264,7 +278,7 @@ namespace MMDTools
                 switch(type) {
                     case MorphType.Group: {
                         for(int j = 0; j < offsetCount; j++) {
-                            var morph = stream.NextDataOfSize(localInfo.VertexIndexSize);
+                            var morph = stream.NextDataOfSize(localInfo.MorphIndexSize);
                             var morphRatio = stream.NextSingle();
                         }
                         break;
@@ -312,8 +326,26 @@ namespace MMDTools
                         }
                         break;
                     }
-                    default:
+                    case MorphType.Flip: {
+                        if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
+                        for(int j = 0; j < offsetCount; j++) {
+                            var morph = stream.NextDataOfSize(localInfo.MorphIndexSize);
+                            var morphRatio = stream.NextSingle();
+                        }
                         break;
+                    }
+                    case MorphType.Impulse: {
+                        if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
+                        for(int j = 0; j < offsetCount; j++) {
+                            var rigidBody = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
+                            var isLocal = stream.NextByte() != 0;
+                            var velocity = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            var rotationTorque = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        }
+                        break;
+                    }
+                    default:
+                        throw new FormatException();
                 }
             }
         }
@@ -369,6 +401,10 @@ namespace MMDTools
                 var jointName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 var jointNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 var jointType = (JointType)stream.NextByte();
+
+                // Joint type of PMX Ver 2.0 is always Spring6DOF.
+                if(localInfo.Version < PMXVersion.V21 && jointType != JointType.Spring6DOF) { throw new FormatException(); }
+
                 var rigidBodyA = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
                 var rigidBodyB = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
                 var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
@@ -384,7 +420,56 @@ namespace MMDTools
 
         private static void ParseSoftBody(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
-            if(localInfo.Version == PMXVersion.V20) { return; }
+            if(localInfo.Version < PMXVersion.V21) { return; }
+            var softBodyCount = stream.NextInt32();
+            for(int i = 0; i < softBodyCount; i++) {
+                var softBodyName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                var softBodyNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                var shape = (SoftBodyShape)stream.NextByte();
+                var targetMaterial = stream.NextDataOfSize(localInfo.MaterialIndexSize);
+                var group = stream.NextByte();
+                var collisionInvisibleFlag = stream.NextUint16();
+                var mode = (SoftBodyModeFlag)stream.NextByte();
+                var bLinkDistance = stream.NextInt32();
+                var clusterCount = stream.NextInt32();
+                var totalMass = stream.NextSingle();
+                var collisionMargin = stream.NextSingle();
+                var aeroModel = (SoftBodyAeroModel)stream.NextInt32();
+
+                Span<float> config = stackalloc float[12];
+                for(int j = 0; j < config.Length; j++) {
+                    config[j] = stream.NextSingle();
+                }
+
+                Span<float> cluster = stackalloc float[6];
+                for(int j = 0; j < cluster.Length; j++) {
+                    cluster[j] = stream.NextSingle();
+                }
+
+                Span<int> iteration = stackalloc int[4];
+                for(int j = 0; j < iteration.Length; j++) {
+                    iteration[j] = stream.NextInt32();
+                }
+
+                Span<float> material = stackalloc float[3];
+                for(int j = 0; j < material.Length; j++) {
+                    material[j] = stream.NextSingle();
+                }
+
+                var anchorRigidBodyCount = stream.NextInt32();
+                var anchors = new AnchorRigidBody[anchorRigidBodyCount];
+                for(int j = 0; j < anchors.Length; j++) {
+                    anchors[j].RigidBody = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
+                    anchors[j].Vertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
+                    anchors[j].IsNearMode = stream.NextByte() != 0;
+                }
+
+                var pinnedVertexCount = stream.NextInt32();
+                var pinnedVertex = new int[pinnedVertexCount];
+                for(int j = 0; j < pinnedVertex.Length; j++) {
+                    pinnedVertex[j] = stream.NextDataOfSize(localInfo.VertexIndexSize);
+                }
+            }
         }
 
         private struct ParserLocalInfo
@@ -464,11 +549,24 @@ namespace MMDTools
             source.NextBytes(ref buf);
         }
 
-        public static string NextString(this Stream source, int byteSize, Encoding encoding)
+        public unsafe static string NextString(this Stream source, int byteSize, Encoding encoding)
         {
-            Span<byte> buf = stackalloc byte[byteSize];
-            Read(source, ref buf);
-            return encoding.GetString(buf);
+            if(byteSize <= 128) {
+                Span<byte> buf = stackalloc byte[byteSize];
+                Read(source, ref buf);
+                return encoding.GetString(buf);
+            }
+            else {
+                var ptr = Marshal.AllocHGlobal(byteSize);
+                try {
+                    var buf = new Span<byte>((byte*)ptr, byteSize);
+                    Read(source, ref buf);
+                    return encoding.GetString(buf);
+                }
+                finally {
+                    Marshal.FreeHGlobal(ptr);
+                }
+            }
         }
 
         public static int NextInt32(this Stream source)
@@ -490,13 +588,6 @@ namespace MMDTools
             Span<byte> buf = stackalloc byte[sizeof(ushort)];
             Read(source, ref buf);
             return BitConverter.ToUInt16(buf);
-        }
-
-        public static uint NextUInt32(this Stream source)
-        {
-            Span<byte> buf = stackalloc byte[sizeof(uint)];
-            Read(source, ref buf);
-            return BitConverter.ToUInt32(buf);
         }
 
         public static float NextSingle(this Stream source)

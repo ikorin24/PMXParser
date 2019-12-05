@@ -264,6 +264,18 @@ namespace MMDTools
             _r0 = r0;
             _r1 = r1;
         }
+
+        public void SetQDEF4Params(int boneIndex1, int boneIndex2, int boneIndex3, int boneIndex4, float weight1, float weight2, float weight3, float weight4)
+        {
+            _boneIndex1 = boneIndex1;
+            _boneIndex2 = boneIndex2;
+            _boneIndex3 = boneIndex3;
+            _boneIndex4 = boneIndex4;
+            _weight1 = weight1;
+            _weight2 = weight2;
+            _weight3 = weight3;
+            _weight4 = weight4;
+        }
     }
 
     public class Material
@@ -354,6 +366,13 @@ namespace MMDTools
         }
     }
 
+    public struct AnchorRigidBody
+    {
+        public int RigidBody;
+        public int Vertex;
+        public bool IsNearMode;
+    }
+
     public enum PMXVersion
     {
         /// <summary>PMX Ver 2.0</summary>
@@ -365,11 +384,14 @@ namespace MMDTools
     [Flags]
     public enum MaterialDrawFlag : byte
     {
-        BothSidesDrawing =       0b00000001,
-        GroundShadow =           0b00000010,
-        DrawingInSelfShadowMap = 0b00000100,
-        SelfShadowDrawing =      0b00001000,
-        EdgeDrawing =            0b00010000,
+        BothSidesDrawing = 0x01,
+        GroundShadow = 0x02,
+        DrawingInSelfShadowMap = 0x04,
+        SelfShadowDrawing = 0x08,
+        EdgeDrawing = 0x10,
+        VertexColor = 0x20,
+        PointDrawing = 0x40,
+        LineDrawing = 0x80,
     }
 
     public enum SphereTextureMode : byte
@@ -410,6 +432,7 @@ namespace MMDTools
         BDEF2 = 1,
         BDEF4 = 2,
         SDEF = 3,
+        QDEF = 4,
     }
 
     public enum MorphTarget : byte
@@ -432,6 +455,8 @@ namespace MMDTools
         AdditionalUV3 = 6,
         AdditionalUV4 = 7,
         Material = 8,
+        Flip = 9,
+        Impulse = 10,
     }
 
     public enum MaterialMorphCalcMode : byte
@@ -469,5 +494,33 @@ namespace MMDTools
     public enum JointType : byte
     {
         Spring6DOF = 0,
+        NoSpring6DOF = 1,
+        P2P = 2,
+        ConeTwist = 3,
+        Slider = 4,
+        Hinge = 5,
+    }
+
+    public enum SoftBodyShape : byte
+    {
+        TriBesh,
+        Rope,
+    }
+
+    [Flags]
+    public enum SoftBodyModeFlag : byte
+    {
+        CreateBLink = 0x01,
+        CreateCluster = 0x02,
+        CrossedLink = 0x04,
+    }
+
+    public enum SoftBodyAeroModel : int
+    {
+        VPoint = 0,
+        VTwoSided = 1,
+        VOneSided = 2,
+        FTwoSided = 3,
+        FOneSided = 4,
     }
 }
