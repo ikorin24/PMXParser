@@ -4,12 +4,38 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Collections.ObjectModel;
 
 namespace MMDTools
 {
     /// <summary>PMX data parser class</summary>
     public static class PMXParser
     {
+        /// <summary>Get PMX data version from specified file</summary>
+        /// <param name="fileName">file name of PMX data</param>
+        /// <returns>PMX file version</returns>
+        public static PMXVersion GetVersion(string fileName)
+        {
+            if(!File.Exists(fileName)) { throw new FileNotFoundException("The file is not found", fileName); }
+            using(var stream = File.OpenRead(fileName)) {
+                return GetVersion(stream);
+            }
+        }
+
+        /// <summary>Get PMX data version from specified stream</summary>
+        /// <param name="stream">stream of PMX data</param>
+        /// <returns>PMX file version</returns>
+        public static PMXVersion GetVersion(Stream stream)
+        {
+            Span<byte> magicWord = stackalloc byte[4];
+            stream.NextBytes(ref magicWord);
+            PMXValidator.ValidateMagicWord(ref magicWord);
+
+            var version = (PMXVersion)(int)(stream.NextSingle() * 10);
+            PMXValidator.ValidateVersion(version);
+            return version;
+        }
+
         /// <summary>Parse PMX data from specified file</summary>
         /// <param name="fileName">file name of PMX data</param>
         /// <returns>PMX object</returns>
@@ -27,7 +53,7 @@ namespace MMDTools
         public static PMXObject Parse(Stream stream)
         {
             var pmx = new PMXObject();
-            ParseHeader(stream, out var localInfo);
+            ParseHeader(stream, out var localInfo, pmx);
             ParseModelInfo(stream, ref localInfo, pmx);
             ParseVertex(stream, ref localInfo, pmx);
             ParseSurface(stream, ref localInfo, pmx);
@@ -42,7 +68,7 @@ namespace MMDTools
             return pmx;
         }
 
-        private static void ParseHeader(Stream stream, out ParserLocalInfo localInfo)
+        private static void ParseHeader(Stream stream, out ParserLocalInfo localInfo, PMXObject pmx)
         {
             Span<byte> magicWord = stackalloc byte[4];
             stream.NextBytes(ref magicWord);
@@ -55,13 +81,8 @@ namespace MMDTools
             Span<byte> info = stackalloc byte[infoLen];
             stream.NextBytes(ref info);
             PMXValidator.ValidateHeaderInfo(ref info);
-            var encoding = info[0] switch
-            {
-                0 => Encoding.Unicode,
-                1 => Encoding.UTF8,
-                _ => throw new Exception("Hey! The value is not validated!? How'd I get here?"),
-            };
-            localInfo = new ParserLocalInfo(version, encoding, info[1], info[2], info[3], info[4], info[5], info[6], info[7]);
+            localInfo = new ParserLocalInfo(version, ref info);
+            pmx.Version = localInfo.Version;
         }
 
         private static void ParseModelInfo(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
@@ -76,8 +97,10 @@ namespace MMDTools
         {
             var vertexCount = stream.NextInt32();
             var vertexList = new List<Vertex>(vertexCount);
+            pmx.VertexList = vertexList.AsReadOnly();
             for(int i = 0; i < vertexCount; i++) {
                 var vertex = new Vertex();
+                vertexList.Add(vertex);
                 vertex.Posision = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 vertex.Normal = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 vertex.UV = new Vector2(stream.NextSingle(), stream.NextSingle());
@@ -139,26 +162,34 @@ namespace MMDTools
                 }
                 vertex.EdgeRatio = stream.NextSingle();
             }
-            pmx.VertexList = vertexList.AsReadOnly();
         }
 
         private static void ParseSurface(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
-            var surfaceCount = stream.NextInt32();
-            var surfaceList = new List<int>(surfaceCount);
-            pmx.SurfaceList = surfaceList.AsReadOnly();
-            for(int i = 0; i < surfaceCount; i++) {
-                surfaceList.Add(stream.NextDataOfSize(localInfo.VertexIndexSize));
+            var count = stream.NextInt32();
+            if(count % 3 != 0) { throw new FormatException(); }
+            var surfaceArray = new Surface[count / 3];
+            pmx.SurfaceList = new ReadOnlyCollection<Surface>(surfaceArray);
+            for(int i = 0; i < surfaceArray.Length; i++) {
+                surfaceArray[i].V1 = stream.NextDataOfSize(localInfo.VertexIndexSize);
+                surfaceArray[i].V2 = stream.NextDataOfSize(localInfo.VertexIndexSize);
+                surfaceArray[i].V3 = stream.NextDataOfSize(localInfo.VertexIndexSize);
             }
         }
 
         private static void ParseTexture(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
+            //var textureCount = stream.NextInt32();
+            //var textureList = new List<string>(textureCount);
+            //pmx.TextureList = textureList.AsReadOnly();
+            //for(int i = 0; i < textureCount; i++) {
+            //    textureList.Add(stream.NextString(stream.NextInt32(), localInfo.Encoding));
+            //}
             var textureCount = stream.NextInt32();
-            var textureList = new List<string>(textureCount);
-            pmx.TextureList = textureList.AsReadOnly();
-            for(int i = 0; i < textureCount; i++) {
-                textureList.Add(stream.NextString(stream.NextInt32(), localInfo.Encoding));
+            var textureArray = new string[textureCount];
+            pmx.TextureList = new ReadOnlyCollection<string>(textureArray);
+            for(int i = 0; i < textureArray.Length; i++) {
+                textureArray[i] = stream.NextString(stream.NextInt32(), localInfo.Encoding);
             }
         }
 
@@ -169,6 +200,7 @@ namespace MMDTools
             pmx.MaterialList = materialList.AsReadOnly();
             for(int i = 0; i < materialCount; i++) {
                 var material = new Material();
+                materialList.Add(material);
                 material.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 material.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 material.Diffuse = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
@@ -210,44 +242,44 @@ namespace MMDTools
         private static void ParseBone(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var boneCount = stream.NextInt32();
+            var boneList = new List<Bone>(boneCount);
+            pmx.BoneList = boneList.AsReadOnly();
             for(int i = 0; i < boneCount; i++) {
-                var boneName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var boneNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var parentBone = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                var transformDepth = stream.NextInt32();
-                var boneflag = (BoneFlag)stream.NextInt16();
-                if((boneflag & BoneFlag.ConnectionDestination) != BoneFlag.ConnectionDestination) {
-                    var positionOffset = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                var bone = new Bone();
+                boneList.Add(bone);
+                bone.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                bone.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                bone.Position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                bone.ParentBone = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                bone.TransformDepth = stream.NextInt32();
+                bone.BoneFlag = (BoneFlag)stream.NextInt16();
+                if(bone.BoneFlag.Has(BoneFlag.ConnectionDestination)) {
+                    bone.ConnectedBone = stream.NextDataOfSize(localInfo.BoneIndexSize);
                 }
                 else {
-                    var connectedBone = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                    bone.PositionOffset = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 }
-                if((boneflag & BoneFlag.RotationAttach) == BoneFlag.RotationAttach ||
-                   (boneflag & BoneFlag.TranslationAttach) == BoneFlag.TranslationAttach) {
-                    var attachParent = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                    var attachRatio = stream.NextSingle();
+                if(bone.BoneFlag.Has(BoneFlag.RotationAttach) || bone.BoneFlag.Has(BoneFlag.TranslationAttach)) {
+                    bone.AttatchParent = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                    bone.AttatchRatio = stream.NextSingle();
                 }
-                if((boneflag & BoneFlag.FixedAxis) == BoneFlag.FixedAxis) {
-                    var axisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                if(bone.BoneFlag.Has(BoneFlag.FixedAxis)) {
+                    bone.AxisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 }
-                if((boneflag & BoneFlag.LocalAxis) == BoneFlag.LocalAxis) {
-                    var xAxisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                    var zAxisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                if(bone.BoneFlag.Has(BoneFlag.LocalAxis)) {
+                    bone.XAxisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                    bone.ZAxisVec = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 }
-                if((boneflag & BoneFlag.ExternalParentTransform) == BoneFlag.ExternalParentTransform) {
-                    var key = stream.NextInt32();
+                if(bone.BoneFlag.Has(BoneFlag.ExternalParentTransform)) {
+                    bone.Key = stream.NextInt32();
                 }
-                if((boneflag & BoneFlag.IK) == BoneFlag.IK) {
-                    var ikTarget = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                    var iterCount = stream.NextInt32();
-                    var maxRadianPerIter = stream.NextSingle();
-                    var ikLinkCount = stream.NextInt32();
-
-                    // Stack overflow maybe happen...
-                    //Span<IKLink> ikLinks = stackalloc IKLink[ikLinkCount];
-                    const int STACK_LIMIT = 1024 * 16;
-                    Span<IKLink> ikLinks = ((uint)ikLinkCount <= STACK_LIMIT) ? stackalloc IKLink[ikLinkCount] : new IKLink[ikLinkCount];
+                if(bone.BoneFlag.Has(BoneFlag.IK)) {
+                    bone.IKTarget = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                    bone.IterCount = stream.NextInt32();
+                    bone.MaxRadianPerIter = stream.NextSingle();
+                    bone.IKLinkCount = stream.NextInt32();
+                    var ikLinks = new IKLink[bone.IKLinkCount];
+                    bone.IKLinks = new ReadOnlyCollection<IKLink>(ikLinks);
                     for(int j = 0; j < ikLinks.Length; j++) {
                         ikLinks[j].Bone = stream.NextDataOfSize(localInfo.BoneIndexSize);
                         ikLinks[j].IsEnableAngleLimited = stream.NextByte() switch
@@ -261,7 +293,6 @@ namespace MMDTools
                             ikLinks[j].MaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         }
                     }
-
                 }
             }
         }
@@ -269,32 +300,45 @@ namespace MMDTools
         private static void ParseMorph(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var morphCount = stream.NextInt32();
+            var morphList = new List<Morph>(morphCount);
+            pmx.MorphList = morphList.AsReadOnly();
             for(int i = 0; i < morphCount; i++) {
-                var morphName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var morphNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var target = (MorphTarget)stream.NextByte();
-                var type = (MorphType)stream.NextByte();
-                var offsetCount = stream.NextInt32();
-                switch(type) {
+                var morph = new Morph();
+                morphList.Add(morph);
+                morph.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                morph.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                morph.MorphTarget = (MorphTarget)stream.NextByte();
+                morph.MorphType = (MorphType)stream.NextByte();
+                var elementCount = stream.NextInt32();
+                switch(morph.MorphType) {
                     case MorphType.Group: {
-                        for(int j = 0; j < offsetCount; j++) {
-                            var morph = stream.NextDataOfSize(localInfo.MorphIndexSize);
-                            var morphRatio = stream.NextSingle();
+                        var groupMorphElements = new GroupMorphElement[elementCount];
+                        morph.GroupMorphElements = new ReadOnlyCollection<GroupMorphElement>(groupMorphElements);
+                        for(int j = 0; j < groupMorphElements.Length; j++) {
+                            groupMorphElements[j] = new GroupMorphElement();
+                            groupMorphElements[j].TargetMorph = stream.NextDataOfSize(localInfo.MorphIndexSize);
+                            groupMorphElements[j].MorphRatio = stream.NextSingle();
                         }
                         break;
                     }
                     case MorphType.Vertex: {
-                        for(int j = 0; j < offsetCount; j++) {
-                            var vertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
-                            var posOffset = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        var vertexMorphElements = new VertexMorphElement[elementCount];
+                        morph.VertexMorphElements = new ReadOnlyCollection<VertexMorphElement>(vertexMorphElements);
+                        for(int j = 0; j < vertexMorphElements.Length; j++) {
+                            vertexMorphElements[j] = new VertexMorphElement();
+                            vertexMorphElements[j].TargetVertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
+                            vertexMorphElements[j].PosOffset = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         }
                         break;
                     }
                     case MorphType.Bone: {
-                        for(int j = 0; j < offsetCount; j++) {
-                            var bone = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                            var translate = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var quaternion = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        var boneMorphElements = new BoneMorphElement[elementCount];
+                        morph.BoneMorphElements = new ReadOnlyCollection<BoneMorphElement>(boneMorphElements);
+                        for(int j = 0; j < boneMorphElements.Length; j++) {
+                            boneMorphElements[j] = new BoneMorphElement();
+                            boneMorphElements[j].TargetBone = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                            boneMorphElements[j].Translate = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            boneMorphElements[j].Quaternion = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         }
                         break;
                     }
@@ -303,49 +347,60 @@ namespace MMDTools
                     case MorphType.AdditionalUV2:
                     case MorphType.AdditionalUV3:
                     case MorphType.AdditionalUV4: {
-                        for(int j = 0; j < offsetCount; j++) {
-                            var vertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
-                            var uvOffset = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        var uvMorphElements = new UVMorphElement[elementCount];
+                        morph.UVMorphElements = new ReadOnlyCollection<UVMorphElement>(uvMorphElements);
+                        for(int j = 0; j < uvMorphElements.Length; j++) {
+                            uvMorphElements[j] = new UVMorphElement();
+                            uvMorphElements[j].TargetVertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
+                            uvMorphElements[j].UVOffset = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         }
                         break;
                     }
                     case MorphType.Material: {
-                        for(int j = 0; j < offsetCount; j++) {
-                            var material = stream.NextDataOfSize(localInfo.MaterialIndexSize);
-                            var isAllMaterialTarget = material == -1;
-                            var calcType = (MaterialMorphCalcMode)stream.NextByte();
-                            var diffuse = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var specular = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var shininess = stream.NextSingle();
-                            var ambient = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var edgeColor = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var edgeSize = stream.NextSingle();
-                            var textureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var sphereTextureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var toonTextureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        var materialMorphElements = new MaterialMorphElement[elementCount];
+                        morph.MaterialMorphElements = new ReadOnlyCollection<MaterialMorphElement>(materialMorphElements);
+                        for(int j = 0; j < materialMorphElements.Length; j++) {
+                            materialMorphElements[j] = new MaterialMorphElement();
+                            materialMorphElements[j].Material = stream.NextDataOfSize(localInfo.MaterialIndexSize);
+                            materialMorphElements[j].CalcMode = (MaterialMorphCalcMode)stream.NextByte();
+                            materialMorphElements[j].Diffuse = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            materialMorphElements[j].Specular = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            materialMorphElements[j].Shininess = stream.NextSingle();
+                            materialMorphElements[j].Ambient = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            materialMorphElements[j].EdgeColor = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            materialMorphElements[j].EdgeSize = stream.NextSingle();
+                            materialMorphElements[j].TextureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            materialMorphElements[j].SphereTextureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            materialMorphElements[j].ToonTextureCoef = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         }
                         break;
                     }
                     case MorphType.Flip: {
                         if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
-                        for(int j = 0; j < offsetCount; j++) {
-                            var morph = stream.NextDataOfSize(localInfo.MorphIndexSize);
-                            var morphRatio = stream.NextSingle();
+                        var flipMorphElements = new FlipMorphElement[elementCount];
+                        morph.FlipMorphElements = new ReadOnlyCollection<FlipMorphElement>(flipMorphElements);
+                        for(int j = 0; j < flipMorphElements.Length; j++) {
+                            flipMorphElements[j] = new FlipMorphElement();
+                            flipMorphElements[j].TargetMorph = stream.NextDataOfSize(localInfo.MorphIndexSize);
+                            flipMorphElements[j].MorphRatio = stream.NextSingle();
                         }
                         break;
                     }
                     case MorphType.Impulse: {
                         if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
-                        for(int j = 0; j < offsetCount; j++) {
-                            var rigidBody = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
-                            var isLocal = stream.NextByte() != 0;
-                            var velocity = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                            var rotationTorque = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        var impulseMorphElements = new ImpulseMorphElement[elementCount];
+                        morph.ImpulseMorphElements = new ReadOnlyCollection<ImpulseMorphElement>(impulseMorphElements);
+                        for(int j = 0; j < impulseMorphElements.Length; j++) {
+                            impulseMorphElements[j] = new ImpulseMorphElement();
+                            impulseMorphElements[j].TargetRigidBody = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
+                            impulseMorphElements[j].IsLocal = stream.NextByte() != 0;
+                            impulseMorphElements[j].Velocity = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                            impulseMorphElements[j].RotationTorque = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         }
                         break;
                     }
                     default:
-                        throw new FormatException();
+                        throw new FormatException($"Invalid morph type : {morph.MorphType}");
                 }
             }
         }
@@ -353,15 +408,21 @@ namespace MMDTools
         private static void ParseDisplayFrame(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var displayFrameCount = stream.NextInt32();
+            var displayFrameList = new List<DisplayFrame>(displayFrameCount);
+            pmx.DisplayFrameList = displayFrameList.AsReadOnly();
             for(int i = 0; i < displayFrameCount; i++) {
-                var displayFrameName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var displayFrameNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var type = (DisplayFrameType)stream.NextByte();
+                var displayFrame = new DisplayFrame();
+                displayFrameList.Add(displayFrame);
+                displayFrame.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                displayFrame.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                displayFrame.Type = (DisplayFrameType)stream.NextByte();
                 var elementCount = stream.NextInt32();
-                for(int j = 0; j < elementCount; j++) {
-                    var element = new DisplayFrameElement();
-                    element.TargetType = (DisplayFrameElementTarget)stream.NextByte();
-                    element.TargetIndex = element.TargetType switch
+                var elements = new DisplayFrameElement[elementCount];
+                displayFrame.Elements = new ReadOnlyCollection<DisplayFrameElement>(elements);
+                for(int j = 0; j < elements.Length; j++) {
+                    elements[j] = new DisplayFrameElement();
+                    elements[j].TargetType = (DisplayFrameElementTarget)stream.NextByte();
+                    elements[j].TargetIndex = elements[j].TargetType switch
                     {
                         DisplayFrameElementTarget.Bone => stream.NextDataOfSize(localInfo.BoneIndexSize),
                         DisplayFrameElementTarget.Morph => stream.NextDataOfSize(localInfo.MorphIndexSize),
@@ -374,47 +435,54 @@ namespace MMDTools
         private static void ParseRigidBody(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var rigidBodyCount = stream.NextInt32();
-            for(int i = 0; i < rigidBodyCount; i++) {
-                var rigidBodyName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var rigidBodyNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var bone = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                var hasBone = bone != -1;
-                var group = stream.NextByte();
-                var collisionInvisibleFlag = stream.NextUint16();
-                var shape = (RigidBodyShape)stream.NextByte();
-                var size = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var rotationRadian = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var mass = stream.NextSingle();
-                var translationAttenuation = stream.NextSingle();
-                var rotationAttenuation = stream.NextSingle();
-                var repulsion = stream.NextSingle();
-                var friction = stream.NextSingle();
-                var physicsType = (RigidBodyPhysicsType)stream.NextByte();
+            var rigidBodyArray = new RigidBody[rigidBodyCount];
+            pmx.RigidBodyList = new ReadOnlyCollection<RigidBody>(rigidBodyArray);
+            for(int i = 0; i < rigidBodyArray.Length; i++) {
+                var rigidBody = new RigidBody();
+                rigidBodyArray[i] = rigidBody;
+                rigidBody.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                rigidBody.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                rigidBody.Bone = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                rigidBody.Group = stream.NextByte();
+                rigidBody.GroupTarget = stream.NextUint16();
+                rigidBody.Shape = (RigidBodyShape)stream.NextByte();
+                rigidBody.Size = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                rigidBody.Position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                rigidBody.RotationRadian = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                rigidBody.Mass = stream.NextSingle();
+                rigidBody.TranslationAttenuation = stream.NextSingle();
+                rigidBody.RotationAttenuation = stream.NextSingle();
+                rigidBody.Recoil = stream.NextSingle();
+                rigidBody.Friction = stream.NextSingle();
+                rigidBody.PhysicsType = (RigidBodyPhysicsType)stream.NextByte();
             }
         }
 
         private static void ParseJoint(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var jointCount = stream.NextInt32();
-            for(int i = 0; i < jointCount; i++) {
-                var jointName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var jointNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var jointType = (JointType)stream.NextByte();
+            var jointArray = new Joint[jointCount];
+            pmx.JointList = new ReadOnlyCollection<Joint>(jointArray);
+            for(int i = 0; i < jointArray.Length; i++) {
+                var joint = new Joint();
+                jointArray[i] = joint;
+                joint.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                joint.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                joint.Type = (JointType)stream.NextByte();
 
                 // Joint type of PMX Ver 2.0 is always Spring6DOF.
-                if(localInfo.Version < PMXVersion.V21 && jointType != JointType.Spring6DOF) { throw new FormatException(); }
+                if(localInfo.Version < PMXVersion.V21 && joint.Type != JointType.Spring6DOF) { throw new FormatException(); }
 
-                var rigidBodyA = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
-                var rigidBodyB = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
-                var position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var rotationRadian = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var translationMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var translationMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var rotationRadianMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var rotationRadianMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var translationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                var rotationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.RigidBody1 = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
+                joint.RigidBody2 = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
+                joint.Position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.RotationRadian = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.TranslationMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.TranslationMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.RotationRadianMinLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.RotationRadianMaxLimit = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.TranslationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                joint.RotationSpring = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
             }
         }
 
@@ -422,42 +490,66 @@ namespace MMDTools
         {
             if(localInfo.Version < PMXVersion.V21) { return; }
             var softBodyCount = stream.NextInt32();
-            for(int i = 0; i < softBodyCount; i++) {
-                var softBodyName = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var softBodyNameEn = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                var shape = (SoftBodyShape)stream.NextByte();
-                var targetMaterial = stream.NextDataOfSize(localInfo.MaterialIndexSize);
-                var group = stream.NextByte();
-                var collisionInvisibleFlag = stream.NextUint16();
-                var mode = (SoftBodyModeFlag)stream.NextByte();
-                var bLinkDistance = stream.NextInt32();
-                var clusterCount = stream.NextInt32();
-                var totalMass = stream.NextSingle();
-                var collisionMargin = stream.NextSingle();
-                var aeroModel = (SoftBodyAeroModel)stream.NextInt32();
+            var softBodyArray = new SoftBody[softBodyCount];
+            pmx.SoftBodyList = new ReadOnlyCollection<SoftBody>(softBodyArray);
+            for(int i = 0; i < softBodyArray.Length; i++) {
+                var softBody = new SoftBody();
+                softBodyArray[i] = softBody;
+                softBody.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                softBody.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
+                softBody.Shape = (SoftBodyShape)stream.NextByte();
+                softBody.TargetMaterial = stream.NextDataOfSize(localInfo.MaterialIndexSize);
+                softBody.Group = stream.NextByte();
+                softBody.GroupTarget = stream.NextUint16();
+                softBody.Mode = (SoftBodyModeFlag)stream.NextByte();
+                softBody.BLinkDistance = stream.NextInt32();
+                softBody.ClusterCount = stream.NextInt32();
+                softBody.TotalMass = stream.NextSingle();
+                softBody.CollisionMargin = stream.NextSingle();
+                softBody.AeroModel = (SoftBodyAeroModel)stream.NextInt32();
 
-                Span<float> config = stackalloc float[12];
-                for(int j = 0; j < config.Length; j++) {
-                    config[j] = stream.NextSingle();
-                }
+                softBody.Config = new SoftBodyConfig()
+                {
+                    VCF = stream.NextSingle(),
+                    DP  = stream.NextSingle(),
+                    DG  = stream.NextSingle(),
+                    LF  = stream.NextSingle(),
+                    PR  = stream.NextSingle(),
+                    VC  = stream.NextSingle(),
+                    DF  = stream.NextSingle(),
+                    MT  = stream.NextSingle(),
+                    CHR = stream.NextSingle(),
+                    KHR = stream.NextSingle(),
+                    SHR = stream.NextSingle(),
+                    AHR = stream.NextSingle(),
+                };
 
-                Span<float> cluster = stackalloc float[6];
-                for(int j = 0; j < cluster.Length; j++) {
-                    cluster[j] = stream.NextSingle();
-                }
-
-                Span<int> iteration = stackalloc int[4];
-                for(int j = 0; j < iteration.Length; j++) {
-                    iteration[j] = stream.NextInt32();
-                }
-
-                Span<float> material = stackalloc float[3];
-                for(int j = 0; j < material.Length; j++) {
-                    material[j] = stream.NextSingle();
-                }
+                softBody.Cluster = new SoftBodyCluster()
+                {
+                    SRHR_CL    = stream.NextSingle(),
+                    SKHR_CL    = stream.NextSingle(),
+                    SSHR_CL    = stream.NextSingle(),
+                    SR_SPLT_CL = stream.NextSingle(),
+                    SK_SPLT_CL = stream.NextSingle(),
+                    SS_SPLT_CL = stream.NextSingle(),
+                };
+                softBody.Iteration = new SoftBodyIteration()
+                {
+                    V_IT = stream.NextInt32(),
+                    P_IT = stream.NextInt32(),
+                    D_IT = stream.NextInt32(),
+                    C_IT = stream.NextInt32(),
+                };
+                softBody.Material = new SoftBodyMaterial()
+                {
+                    LST = stream.NextSingle(),
+                    AST = stream.NextSingle(),
+                    VST = stream.NextSingle(),
+                };
 
                 var anchorRigidBodyCount = stream.NextInt32();
                 var anchors = new AnchorRigidBody[anchorRigidBodyCount];
+                softBody.AnchorRigidBodies = new ReadOnlyCollection<AnchorRigidBody>(anchors);
                 for(int j = 0; j < anchors.Length; j++) {
                     anchors[j].RigidBody = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
                     anchors[j].Vertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
@@ -466,6 +558,7 @@ namespace MMDTools
 
                 var pinnedVertexCount = stream.NextInt32();
                 var pinnedVertex = new int[pinnedVertexCount];
+                softBody.PinnedVertex = new ReadOnlyCollection<int>(pinnedVertex);
                 for(int j = 0; j < pinnedVertex.Length; j++) {
                     pinnedVertex[j] = stream.NextDataOfSize(localInfo.VertexIndexSize);
                 }
@@ -484,19 +577,22 @@ namespace MMDTools
             public byte MorphIndexSize { get; private set; }
             public byte RigidBodyIndexSize { get; private set; }
 
-            public ParserLocalInfo(PMXVersion version, Encoding encoding, int additonalUVCount,
-                                   byte vertexIndexSize, byte textureIndexSize, byte materialIndexSize,
-                                   byte boneIndexSize, byte morphIndexSize, byte rigidBodyIndexSize)
+            public ParserLocalInfo(PMXVersion version, ref Span<byte> info)
             {
                 Version = version;
-                Encoding = encoding;
-                AdditionalUVCount = additonalUVCount;
-                VertexIndexSize = vertexIndexSize;
-                TextureIndexSize = textureIndexSize;
-                MaterialIndexSize = materialIndexSize;
-                BoneIndexSize = boneIndexSize;
-                MorphIndexSize = morphIndexSize;
-                RigidBodyIndexSize = rigidBodyIndexSize;
+                Encoding = info[0] switch
+                {
+                    0 => Encoding.Unicode,
+                    1 => Encoding.UTF8,
+                    _ => throw new Exception("Hey! The value is not validated!? How'd I get here?"),
+                };
+                AdditionalUVCount = info[1];
+                VertexIndexSize = info[2];
+                TextureIndexSize = info[3];
+                MaterialIndexSize = info[4];
+                BoneIndexSize = info[5];
+                MorphIndexSize = info[6];
+                RigidBodyIndexSize = info[7];
             }
         }
     }

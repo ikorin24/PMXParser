@@ -7,6 +7,8 @@ namespace MMDTools
     /// <summary>PMX data object</summary>
     public class PMXObject
     {
+        public PMXVersion Version { get; internal set; }
+
         /// <summary>Get name of pmx data</summary>
         public string Name { get; internal set; } = string.Empty;
         /// <summary>Get English name of pmx data</summary>
@@ -17,11 +19,23 @@ namespace MMDTools
         public string CommentEnglish { get; internal set; } = string.Empty;
 
         public ReadOnlyCollection<Vertex> VertexList { get; internal set; } = null!;
-        public ReadOnlyCollection<int> SurfaceList { get; internal set; } = null!;
+        public ReadOnlyCollection<Surface> SurfaceList { get; internal set; } = null!;
 
         public ReadOnlyCollection<string> TextureList { get; internal set; } = null!;
 
         public ReadOnlyCollection<Material> MaterialList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<Bone> BoneList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<Morph> MorphList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<DisplayFrame> DisplayFrameList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<RigidBody> RigidBodyList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<Joint> JointList { get; internal set; } = null!;
+
+        public ReadOnlyCollection<SoftBody> SoftBodyList { get; internal set; } = null!;
 
         internal PMXObject()
         {
@@ -204,7 +218,7 @@ namespace MMDTools
         }
     }
 
-    public struct Vertex
+    public class Vertex
     {
         private int _boneIndex1;
         private int _boneIndex2;
@@ -278,6 +292,13 @@ namespace MMDTools
         }
     }
 
+    public struct Surface
+    {
+        public int V1 { get; internal set; }
+        public int V2 { get; internal set; }
+        public int V3 { get; internal set; }
+    }
+
     public class Material
     {
         public string Name { get; internal set; } = string.Empty;
@@ -298,12 +319,213 @@ namespace MMDTools
         public int VertexCount { get; internal set; }
     }
 
+    public class Bone
+    {
+        public string Name { get; internal set; } = string.Empty;
+        public string NameEnglish { get; internal set; } = string.Empty;
+        public Vector3 Position { get; internal set; }
+        public int ParentBone { get; internal set; }
+        public int TransformDepth { get; internal set; }
+        public BoneFlag BoneFlag { get; internal set; }
+        public int ConnectedBone { get; internal set; }
+        public Vector3 PositionOffset { get; internal set; }
+        public int AttatchParent { get; internal set; }
+        public float AttatchRatio { get; internal set; }
+        public Vector3 AxisVec { get; internal set; }
+        public Vector3 XAxisVec { get; internal set; }
+        public Vector3 ZAxisVec { get; internal set; }
+        public int Key { get; internal set; }
+        public int IKTarget { get; internal set; }
+        public int IterCount { get; internal set; }
+        public float MaxRadianPerIter { get; internal set; }
+        public int IKLinkCount { get; internal set; }
+        public ReadOnlyCollection<IKLink> IKLinks { get; internal set; } = null!;
+    }
+
+    public class Morph
+    {
+        public string Name { get; internal set; } = string.Empty;
+        public string NameEnglish { get; internal set; } = string.Empty;
+        public MorphTarget MorphTarget { get; internal set; }
+        public MorphType MorphType { get; internal set; }
+        public ReadOnlyCollection<GroupMorphElement> GroupMorphElements { get; internal set; } = null!;
+        public ReadOnlyCollection<VertexMorphElement> VertexMorphElements { get; internal set; } = null!;
+        public ReadOnlyCollection<BoneMorphElement> BoneMorphElements { get; internal set; } = null!;
+        public ReadOnlyCollection<UVMorphElement> UVMorphElements { get; internal set; } = null!;
+        public ReadOnlyCollection<MaterialMorphElement> MaterialMorphElements { get; internal set; } = null!;
+        public ReadOnlyCollection<FlipMorphElement> FlipMorphElements { get; internal set; } = null!;
+        public ReadOnlyCollection<ImpulseMorphElement> ImpulseMorphElements { get; internal set; } = null!;
+    }
+
+    public class GroupMorphElement
+    {
+        public int TargetMorph { get; internal set; }
+        public float MorphRatio { get; internal set; }
+    }
+
+    public class VertexMorphElement
+    {
+        public int TargetVertex { get; internal set; }
+        public Vector3 PosOffset { get; internal set; }
+    }
+
+    public class BoneMorphElement
+    {
+        public int TargetBone { get; internal set; }
+        public Vector3 Translate { get; internal set; }
+        public Vector4 Quaternion { get; internal set; }
+    }
+
+    public class UVMorphElement
+    {
+        public int TargetVertex { get; internal set; }
+        public Vector4 UVOffset { get; internal set; }
+    }
+
+    public class MaterialMorphElement
+    {
+        public int Material { get; internal set; }
+        public bool IsAllMaterialTarget => Material == -1;
+        public MaterialMorphCalcMode CalcMode { get; internal set; }
+        public Color Diffuse { get; internal set; }
+        public Color Specular { get; internal set; }
+        public float Shininess { get; internal set; }
+        public Color Ambient { get; internal set; }
+        public Color EdgeColor { get; internal set; }
+        public float EdgeSize { get; internal set; }
+        public Color TextureCoef { get; internal set; }
+        public Color SphereTextureCoef { get; internal set; }
+        public Color ToonTextureCoef { get; internal set; }
+    }
+
+    public class FlipMorphElement
+    {
+        public int TargetMorph { get; internal set; }
+        public float MorphRatio { get; internal set; }
+    }
+    
+    public class ImpulseMorphElement
+    {
+        public int TargetRigidBody { get; internal set; }
+        public bool IsLocal { get; internal set; }
+        public Vector3 Velocity { get; internal set; }
+        public Vector3 RotationTorque { get; internal set; }
+    }
+
+    public class DisplayFrame
+    {
+        public string Name { get; internal set; } = string.Empty;
+        public string NameEnglish { get; internal set; } = string.Empty;
+        public DisplayFrameType Type { get; internal set; }
+        public ReadOnlyCollection<DisplayFrameElement> Elements { get; internal set; } = null!;
+    }
+
+    public class RigidBody
+    {
+        public string Name { get; internal set; } = string.Empty;
+        public string NameEnglish { get; internal set; } = string.Empty;
+        public int Bone { get; internal set; } = -1;
+        public bool HasBone => Bone != -1;
+        public byte Group { get; internal set; }
+        public ushort GroupTarget { get; internal set; }
+        public RigidBodyShape Shape { get; internal set; }
+        public Vector3 Size { get; internal set; }
+        public Vector3 Position { get; internal set; }
+        public Vector3 RotationRadian { get; internal set; }
+        public float Mass { get; internal set; }
+        public float TranslationAttenuation { get; internal set; }
+        public float RotationAttenuation { get; internal set; }
+        public float Recoil { get; internal set; }
+        public float Friction { get; internal set; }
+        public RigidBodyPhysicsType PhysicsType { get; internal set; }
+    }
+
+    public class Joint
+    {
+        public string Name { get; internal set; } = string.Empty;
+        public string NameEnglish { get; internal set; } = string.Empty;
+        public JointType Type { get; internal set; }
+        public int RigidBody1 { get; internal set; }
+        public int RigidBody2 { get; internal set; }
+        public Vector3 Position { get; internal set; }
+        public Vector3 RotationRadian { get; internal set; }
+        public Vector3 TranslationMinLimit { get; internal set; }
+        public Vector3 TranslationMaxLimit { get; internal set; }
+        public Vector3 RotationRadianMinLimit { get; internal set; }
+        public Vector3 RotationRadianMaxLimit { get; internal set; }
+        public Vector3 TranslationSpring { get; internal set; }
+        public Vector3 RotationSpring { get; internal set; }
+    }
+
+    public class SoftBody
+    {
+        public string Name { get; internal set; } = string.Empty;
+        public string NameEnglish { get; internal set; } = string.Empty;
+        public SoftBodyShape Shape { get; internal set; }
+        public int TargetMaterial { get; internal set; }
+        public byte Group { get; internal set; }
+        public ushort GroupTarget { get; internal set; }
+        public SoftBodyModeFlag Mode { get; internal set; }
+        public int BLinkDistance { get; internal set; }
+        public int ClusterCount { get; internal set; }
+        public float TotalMass { get; internal set; }
+        public float CollisionMargin { get; internal set; }
+        public SoftBodyAeroModel AeroModel { get; internal set; }
+        public SoftBodyConfig Config { get; internal set; } = null!;
+        public SoftBodyCluster Cluster { get; internal set; } = null!;
+        public SoftBodyIteration Iteration { get; internal set; } = null!;
+        public SoftBodyMaterial Material { get; internal set; } = null!;
+        public ReadOnlyCollection<AnchorRigidBody> AnchorRigidBodies { get; internal set; } = null!;
+        public ReadOnlyCollection<int> PinnedVertex { get; internal set; } = null!;
+    }
+
+    public class SoftBodyConfig
+    {
+        public float VCF { get; internal set; }
+        public float DP { get; internal set; }
+        public float DG { get; internal set; }
+        public float LF { get; internal set; }
+        public float PR { get; internal set; }
+        public float VC { get; internal set; }
+        public float DF { get; internal set; }
+        public float MT { get; internal set; }
+        public float CHR { get; internal set; }
+        public float KHR { get; internal set; }
+        public float SHR { get; internal set; }
+        public float AHR { get; internal set; }
+    }
+
+    public class SoftBodyCluster
+    {
+        public float SRHR_CL { get; internal set; }
+        public float SKHR_CL { get; internal set; }
+        public float SSHR_CL { get; internal set; }
+        public float SR_SPLT_CL { get; internal set; }
+        public float SK_SPLT_CL { get; internal set; }
+        public float SS_SPLT_CL { get; internal set; }
+    }
+
+    public class SoftBodyIteration
+    {
+        public int V_IT { get; internal set; }
+        public int P_IT { get; internal set; }
+        public int D_IT { get; internal set; }
+        public int C_IT { get; internal set; }
+    }
+
+    public class SoftBodyMaterial
+    {
+        public float LST { get; internal set; }
+        public float AST { get; internal set; }
+        public float VST { get; internal set; }
+    }
+
     public struct IKLink : IEquatable<IKLink>
     {
-        public int Bone;
-        public bool IsEnableAngleLimited;
-        public Vector3 MinLimit;
-        public Vector3 MaxLimit;
+        public int Bone { get; internal set; }
+        public bool IsEnableAngleLimited { get; internal set; }
+        public Vector3 MinLimit { get; internal set; }
+        public Vector3 MaxLimit { get; internal set; }
 
         public override bool Equals(object? obj)
         {
@@ -336,8 +558,8 @@ namespace MMDTools
 
     public struct DisplayFrameElement : IEquatable<DisplayFrameElement>
     {
-        public DisplayFrameElementTarget TargetType;
-        public int TargetIndex;
+        public DisplayFrameElementTarget TargetType { get; internal set; }
+        public int TargetIndex { get; internal set; }
 
         public override bool Equals(object? obj)
         {
@@ -366,11 +588,38 @@ namespace MMDTools
         }
     }
 
-    public struct AnchorRigidBody
+    public struct AnchorRigidBody : IEquatable<AnchorRigidBody>
     {
-        public int RigidBody;
-        public int Vertex;
-        public bool IsNearMode;
+        public int RigidBody { get; internal set; }
+        public int Vertex { get; internal set; }
+        public bool IsNearMode { get; internal set; }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is AnchorRigidBody body && Equals(body);
+        }
+
+        public bool Equals(AnchorRigidBody other)
+        {
+            return RigidBody == other.RigidBody &&
+                   Vertex == other.Vertex &&
+                   IsNearMode == other.IsNearMode;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(RigidBody, Vertex, IsNearMode);
+        }
+
+        public static bool operator ==(AnchorRigidBody left, AnchorRigidBody right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(AnchorRigidBody left, AnchorRigidBody right)
+        {
+            return !(left == right);
+        }
     }
 
     public enum PMXVersion
@@ -522,5 +771,13 @@ namespace MMDTools
         VOneSided = 2,
         FTwoSided = 3,
         FOneSided = 4,
+    }
+
+    public static class FlagsEnumExtension
+    {
+        public static bool Has(this BoneFlag source, BoneFlag flag)
+        {
+            return (source & flag) == flag;
+        }
     }
 }
