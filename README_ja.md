@@ -52,3 +52,9 @@ PMX ファイルフォーマットは下記のリンクからダウンロード�
 PmxEditor は私が製作したものではありません、ご注意ください。
 
 http://kkhk22.seesaa.net/category/14045227-1.html
+
+## ライセンスについて
+
+このリポジトリは [MIT ライセンス](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)です。
+
+また、このリポジトリはいくつかのライセンス製品を含んでいます。使用製品とそのライセンス一覧については[こちら](https://github.com/ikorin24/PMXParser/blob/master/CREDITS.md)をご覧ください。

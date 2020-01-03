@@ -52,3 +52,9 @@ You can see the format of PMX in a text of PmxEditor, download from the followin
 PmxEditor is **NOT MY PRODUCTION**.
 
 http://kkhk22.seesaa.net/category/14045227-1.html
+
+## License and Credits
+
+This repository is under [MIT License](https://github.com/ikorin24/PMXParser/blob/master/LICENSE).
+
+This repository contains some licensed products. The list of them and their license are [HERE](https://github.com/ikorin24/PMXParser/blob/master/CREDITS.md).
