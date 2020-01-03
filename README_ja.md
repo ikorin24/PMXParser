@@ -1,5 +1,7 @@
 # PMX Parser
 
+[English](https://github.com/ikorin24/PMXParser/blob/master/README.md)
+
 ## これは何？
 
 PMX ファイルの C# (.NET Starndard 2.1) パーサーライブラリです。

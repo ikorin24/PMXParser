@@ -1,5 +1,7 @@
 # PMX Parser
 
+[日本語](https://github.com/ikorin24/PMXParser/blob/master/README_ja.md)
+
 ## What is This ?
 
 PMX file parser library of C#, .NET Standard 2.1. PMX file is MMD (*Miku Miku Dance*) model file.
