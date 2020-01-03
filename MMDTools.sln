@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MMDTools", "MMDTools\MMDTools.csproj", "{2F426329-68D9-4D20-954E-4E41D951C0BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMXParser", "PMXParser\PMXParser.csproj", "{2F426329-68D9-4D20-954E-4E41D951C0BD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{61065D56-65C2-419D-91C9-5B9D49A7C18B}"
 EndProject

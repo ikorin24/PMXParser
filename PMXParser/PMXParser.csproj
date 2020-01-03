@@ -5,10 +5,17 @@
     <Authors>ikorin24</Authors>
     <Company />
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>0.9.0</Version>
+    <Copyright>© 2020 ikorin24</Copyright>
+    <Description>PMX file parser library</Description>
+    <RepositoryUrl>https://github.com/ikorin24/PMXParser</RepositoryUrl>
+    <Product>PMXParser</Product>
+    <PackageId>PMXParser</PackageId>
+    <PackageTags />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\MMDTools.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\PMXParser.xml</DocumentationFile>
     <OutputPath>bin\Release\</OutputPath>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>

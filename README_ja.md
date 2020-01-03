@@ -40,9 +40,9 @@ using(var stream = System.IO.File.OpenRead(fileName))
 Windows, Mac, Linux
 
 ```sh
-$ dotnet build MMDTools/MMDTools.csproj -c Release
+$ dotnet build PMXParser/PMXParser.csproj -c Release
 
-# ---> MMDTools/bin/Release/netstandard2.1/MMDTools.dll
+# ---> PMXParser/bin/Release/netstandard2.1/PMXParser.dll
 ```
 
 ## PMX ファイルフォーマットについて

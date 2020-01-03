@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MMDTools\MMDTools.csproj" />
+    <ProjectReference Include="..\PMXParser\PMXParser.csproj" />
   </ItemGroup>
 
 </Project>
