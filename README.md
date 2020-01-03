@@ -55,6 +55,14 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 
 ## License and Credits
 
+Author : [ikorin24](https://github.com/ikorin24)
+
 This repository is under [MIT License](https://github.com/ikorin24/PMXParser/blob/master/LICENSE).
 
 This repository contains some licensed products. The list of them and their license are [HERE](https://github.com/ikorin24/PMXParser/blob/master/CREDITS.md).
+
+## Release Note
+
+### 2020/01/04 ver 0.9.0
+
+First Release

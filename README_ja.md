@@ -55,6 +55,14 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 
 ## ライセンスについて
 
+作成者 : [ikorin24](https://github.com/ikorin24)
+
 このリポジトリは [MIT ライセンス](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)です。
 
 また、このリポジトリはいくつかのライセンス製品を含んでいます。使用製品とそのライセンス一覧については[こちら](https://github.com/ikorin24/PMXParser/blob/master/CREDITS.md)をご覧ください。
+
+## リリースノート
+
+### 2020/01/04 ver 0.9.0
+
+初版リリース
