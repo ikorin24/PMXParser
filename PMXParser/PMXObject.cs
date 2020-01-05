@@ -236,10 +236,10 @@ namespace MMDTools
         public Vector3 Normal;
         public Vector2 UV;
         public int AdditionalUVCount;
-        public Vector2 AdditionalUV1;
-        public Vector2 AdditionalUV2;
-        public Vector2 AdditionalUV3;
-        public Vector2 AdditionalUV4;
+        public Vector4 AdditionalUV1;
+        public Vector4 AdditionalUV2;
+        public Vector4 AdditionalUV3;
+        public Vector4 AdditionalUV4;
         public WeightTransformType WeightTransformType;
         public float EdgeRatio;
 

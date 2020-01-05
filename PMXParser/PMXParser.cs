@@ -105,7 +105,10 @@ namespace MMDTools
                 vertex.Normal = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 vertex.UV = new Vector2(stream.NextSingle(), stream.NextSingle());
                 vertex.AdditionalUVCount = localInfo.AdditionalUVCount;
-                Span<Vector4> additionalUV = stackalloc Vector4[localInfo.AdditionalUVCount];
+                if(localInfo.AdditionalUVCount > 0) { vertex.AdditionalUV1 = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle()); }
+                if(localInfo.AdditionalUVCount > 1) { vertex.AdditionalUV2 = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle()); }
+                if(localInfo.AdditionalUVCount > 2) { vertex.AdditionalUV3 = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle()); }
+                if(localInfo.AdditionalUVCount > 3) { vertex.AdditionalUV4 = new Vector4(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle()); }
                 vertex.WeightTransformType = (WeightTransformType)stream.NextByte();
                 switch(vertex.WeightTransformType) {
                     case WeightTransformType.BDEF1: {
