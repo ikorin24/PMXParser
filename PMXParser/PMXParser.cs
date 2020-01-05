@@ -615,12 +615,12 @@ namespace MMDTools
         {
             Assert(info[0] == 0 || info[0] == 1, "Invalid encode type");
             Assert(info[1] >= 0 || info[1] <= 4, "Invalid additional UV count");
-            Assert(info[2] == 1 || info[2] <= 2 || info[2] == 4, "Invalid vertex index size");
-            Assert(info[3] == 1 || info[3] <= 2 || info[3] == 4, "Invalid texture index size");
-            Assert(info[4] == 1 || info[4] <= 2 || info[4] == 4, "Invalid material index size");
-            Assert(info[5] == 1 || info[5] <= 2 || info[5] == 4, "Invalid bone index size");
-            Assert(info[6] == 1 || info[6] <= 2 || info[6] == 4, "Invalid morph index size");
-            Assert(info[7] == 1 || info[7] <= 2 || info[7] == 4, "Invalid rigid body index size");
+            Assert(info[2] == 1 || info[2] == 2 || info[2] == 4, "Invalid vertex index size");
+            Assert(info[3] == 1 || info[3] == 2 || info[3] == 4, "Invalid texture index size");
+            Assert(info[4] == 1 || info[4] == 2 || info[4] == 4, "Invalid material index size");
+            Assert(info[5] == 1 || info[5] == 2 || info[5] == 4, "Invalid bone index size");
+            Assert(info[6] == 1 || info[6] == 2 || info[6] == 4, "Invalid morph index size");
+            Assert(info[7] == 1 || info[7] == 2 || info[7] == 4, "Invalid rigid body index size");
         }
 
         private static void Assert(bool condition, string message)
