@@ -182,12 +182,6 @@ namespace MMDTools
 
         private static void ParseTexture(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
-            //var textureCount = stream.NextInt32();
-            //var textureList = new List<string>(textureCount);
-            //pmx.TextureList = textureList.AsReadOnly();
-            //for(int i = 0; i < textureCount; i++) {
-            //    textureList.Add(stream.NextString(stream.NextInt32(), localInfo.Encoding));
-            //}
             var textureCount = stream.NextInt32();
             var textureArray = new string[textureCount];
             pmx.TextureList = new ReadOnlyCollection<string>(textureArray);
