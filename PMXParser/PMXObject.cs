@@ -774,6 +774,10 @@ namespace MMDTools
 
     public static class FlagsEnumExtension
     {
+        // This is compatible with Enum.HasFlag method.
+        // Enum.HasFlag method is bad performance because of boxing. About 20 times slower.
+        // (This happens only before dotnet core 2.0. The JIT compiler after dotnet core 2.1 avoid it.)
+
         public static bool Has(this BoneFlag source, BoneFlag flag)
         {
             return (source & flag) == flag;
