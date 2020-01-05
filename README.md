@@ -66,3 +66,7 @@ This repository contains some licensed products. The list of them and their lice
 ### 2020/01/04 ver 0.9.0
 
 First Release
+
+### 2020/01/06 ver 0.9.1
+
+Bug fix and performance improvement a little
