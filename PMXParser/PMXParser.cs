@@ -399,6 +399,13 @@ namespace MMDTools
                     default:
                         throw new FormatException($"Invalid morph type : {morph.MorphType}");
                 }
+                morph.GroupMorphElements    ??= new ReadOnlyCollection<GroupMorphElement>(Array.Empty<GroupMorphElement>());
+                morph.VertexMorphElements   ??= new ReadOnlyCollection<VertexMorphElement>(Array.Empty<VertexMorphElement>());
+                morph.BoneMorphElements     ??= new ReadOnlyCollection<BoneMorphElement>(Array.Empty<BoneMorphElement>());
+                morph.UVMorphElements       ??= new ReadOnlyCollection<UVMorphElement>(Array.Empty<UVMorphElement>());
+                morph.MaterialMorphElements ??= new ReadOnlyCollection<MaterialMorphElement>(Array.Empty<MaterialMorphElement>());
+                morph.FlipMorphElements     ??= new ReadOnlyCollection<FlipMorphElement>(Array.Empty<FlipMorphElement>());
+                morph.ImpulseMorphElements  ??= new ReadOnlyCollection<ImpulseMorphElement>(Array.Empty<ImpulseMorphElement>());
             }
         }
 
@@ -485,7 +492,10 @@ namespace MMDTools
 
         private static void ParseSoftBody(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
-            if(localInfo.Version < PMXVersion.V21) { return; }
+            if(localInfo.Version < PMXVersion.V21) {
+                pmx.SoftBodyList = new ReadOnlyCollection<SoftBody>(Array.Empty<SoftBody>());
+                return;
+            }
             var softBodyCount = stream.NextInt32();
             var softBodyArray = new SoftBody[softBodyCount];
             pmx.SoftBodyList = new ReadOnlyCollection<SoftBody>(softBodyArray);
