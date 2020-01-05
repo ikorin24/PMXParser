@@ -220,75 +220,74 @@ namespace MMDTools
 
     public class Vertex
     {
-        private int _boneIndex1;
-        private int _boneIndex2;
-        private int _boneIndex3;
-        private int _boneIndex4;
-        private float _weight1;
-        private float _weight2;
-        private float _weight3;
-        private float _weight4;
-        private Vector3 _c;
-        private Vector3 _r0;
-        private Vector3 _r1;
-
-        public Vector3 Posision;
-        public Vector3 Normal;
-        public Vector2 UV;
-        public int AdditionalUVCount;
-        public Vector4 AdditionalUV1;
-        public Vector4 AdditionalUV2;
-        public Vector4 AdditionalUV3;
-        public Vector4 AdditionalUV4;
-        public WeightTransformType WeightTransformType;
-        public float EdgeRatio;
+        public Vector3 Posision { get; internal set; }
+        public Vector3 Normal { get; internal set; }
+        public Vector2 UV { get; internal set; }
+        public int AdditionalUVCount { get; internal set; }
+        public Vector4 AdditionalUV1 { get; internal set; }
+        public Vector4 AdditionalUV2 { get; internal set; }
+        public Vector4 AdditionalUV3 { get; internal set; }
+        public Vector4 AdditionalUV4 { get; internal set; }
+        public WeightTransformType WeightTransformType { get; internal set; }
+        public int BoneIndex1 { get; private set; }
+        public int BoneIndex2 { get; private set; }
+        public int BoneIndex3 { get; private set; }
+        public int BoneIndex4 { get; private set; }
+        public float Weight1 { get; private set; }
+        public float Weight2 { get; private set; }
+        public float Weight3 { get; private set; }
+        public float Weight4 { get; private set; }
+        public Vector3 C { get; private set; }
+        public Vector3 R0 { get; private set; }
+        public Vector3 R1 { get; private set; }
+        public float EdgeRatio { get; internal set; }
 
         public void SetBDEF1Params(int boneIndex1)
         {
-            _boneIndex1 = boneIndex1;
+            BoneIndex1 = boneIndex1;
         }
 
         public void SetBDEF2Params(int boneIndex1, int boneIndex2, float weight1, float weight2)
         {
-            _boneIndex1 = boneIndex1;
-            _boneIndex2 = boneIndex2;
-            _weight1 = weight1;
-            _weight2 = weight2;
+            BoneIndex1 = boneIndex1;
+            BoneIndex2 = boneIndex2;
+            Weight1 = weight1;
+            Weight2 = weight2;
         }
 
         public void SetBDEF4Params(int boneIndex1, int boneIndex2, int boneIndex3, int boneIndex4, float weight1, float weight2, float weight3, float weight4)
         {
-            _boneIndex1 = boneIndex1;
-            _boneIndex2 = boneIndex2;
-            _boneIndex3 = boneIndex3;
-            _boneIndex4 = boneIndex4;
-            _weight1 = weight1;
-            _weight2 = weight2;
-            _weight3 = weight3;
-            _weight4 = weight4;
+            BoneIndex1 = boneIndex1;
+            BoneIndex2 = boneIndex2;
+            BoneIndex3 = boneIndex3;
+            BoneIndex4 = boneIndex4;
+            Weight1 = weight1;
+            Weight2 = weight2;
+            Weight3 = weight3;
+            Weight4 = weight4;
         }
 
         public void SetSDEFParams(int boneIndex1, int boneIndex2, float weight1, float weight2, Vector3 c, Vector3 r0, Vector3 r1)
         {
-            _boneIndex1 = boneIndex1;
-            _boneIndex2 = boneIndex2;
-            _weight1 = weight1;
-            _weight2 = weight2;
-            _c = c;
-            _r0 = r0;
-            _r1 = r1;
+            BoneIndex1 = boneIndex1;
+            BoneIndex2 = boneIndex2;
+            Weight1 = weight1;
+            Weight2 = weight2;
+            C = c;
+            R0 = r0;
+            R1 = r1;
         }
 
         public void SetQDEF4Params(int boneIndex1, int boneIndex2, int boneIndex3, int boneIndex4, float weight1, float weight2, float weight3, float weight4)
         {
-            _boneIndex1 = boneIndex1;
-            _boneIndex2 = boneIndex2;
-            _boneIndex3 = boneIndex3;
-            _boneIndex4 = boneIndex4;
-            _weight1 = weight1;
-            _weight2 = weight2;
-            _weight3 = weight3;
-            _weight4 = weight4;
+            BoneIndex1 = boneIndex1;
+            BoneIndex2 = boneIndex2;
+            BoneIndex3 = boneIndex3;
+            BoneIndex4 = boneIndex4;
+            Weight1 = weight1;
+            Weight2 = weight2;
+            Weight3 = weight3;
+            Weight4 = weight4;
         }
     }
 
