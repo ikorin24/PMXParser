@@ -96,11 +96,11 @@ namespace MMDTools
         private static void ParseVertex(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var vertexCount = stream.NextInt32();
-            var vertexList = new List<Vertex>(vertexCount);
-            pmx.VertexList = vertexList.AsReadOnly();
+            var vertexArray = new Vertex[vertexCount];
+            pmx.VertexList = new ReadOnlyCollection<Vertex>(vertexArray);
             for(int i = 0; i < vertexCount; i++) {
                 var vertex = new Vertex();
-                vertexList.Add(vertex);
+                vertexArray[i] = vertex;
                 vertex.Posision = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 vertex.Normal = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 vertex.UV = new Vector2(stream.NextSingle(), stream.NextSingle());
@@ -193,11 +193,11 @@ namespace MMDTools
         private static void ParseMaterial(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var materialCount = stream.NextInt32();
-            var materialList = new List<Material>(materialCount);
-            pmx.MaterialList = materialList.AsReadOnly();
+            var materialArray = new Material[materialCount];
+            pmx.MaterialList = new ReadOnlyCollection<Material>(materialArray);
             for(int i = 0; i < materialCount; i++) {
                 var material = new Material();
-                materialList.Add(material);
+                materialArray[i] = material;
                 material.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 material.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 material.Diffuse = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
@@ -239,11 +239,11 @@ namespace MMDTools
         private static void ParseBone(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var boneCount = stream.NextInt32();
-            var boneList = new List<Bone>(boneCount);
-            pmx.BoneList = boneList.AsReadOnly();
+            var boneArray = new Bone[boneCount];
+            pmx.BoneList = new ReadOnlyCollection<Bone>(boneArray);
             for(int i = 0; i < boneCount; i++) {
                 var bone = new Bone();
-                boneList.Add(bone);
+                boneArray[i] = bone;
                 bone.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 bone.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 bone.Position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
@@ -297,11 +297,11 @@ namespace MMDTools
         private static void ParseMorph(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var morphCount = stream.NextInt32();
-            var morphList = new List<Morph>(morphCount);
-            pmx.MorphList = morphList.AsReadOnly();
+            var morphArray = new Morph[morphCount];
+            pmx.MorphList = new ReadOnlyCollection<Morph>(morphArray);
             for(int i = 0; i < morphCount; i++) {
                 var morph = new Morph();
-                morphList.Add(morph);
+                morphArray[i] = morph;
                 morph.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 morph.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 morph.MorphTarget = (MorphTarget)stream.NextByte();
@@ -405,11 +405,11 @@ namespace MMDTools
         private static void ParseDisplayFrame(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             var displayFrameCount = stream.NextInt32();
-            var displayFrameList = new List<DisplayFrame>(displayFrameCount);
-            pmx.DisplayFrameList = displayFrameList.AsReadOnly();
+            var displayFrameArray = new DisplayFrame[displayFrameCount];
+            pmx.DisplayFrameList = new ReadOnlyCollection<DisplayFrame>(displayFrameArray);
             for(int i = 0; i < displayFrameCount; i++) {
                 var displayFrame = new DisplayFrame();
-                displayFrameList.Add(displayFrame);
+                displayFrameArray[i] = displayFrame;
                 displayFrame.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 displayFrame.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 displayFrame.Type = (DisplayFrameType)stream.NextByte();
