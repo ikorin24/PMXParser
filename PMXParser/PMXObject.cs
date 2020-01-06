@@ -19,6 +19,7 @@ namespace MMDTools
         public string CommentEnglish { get; internal set; } = string.Empty;
 
         public ReadOnlyCollection<Vertex> VertexList { get; internal set; } = null!;
+
         public ReadOnlyCollection<Surface> SurfaceList { get; internal set; } = null!;
 
         public ReadOnlyCollection<string> TextureList { get; internal set; } = null!;
@@ -229,66 +230,18 @@ namespace MMDTools
         public Vector4 AdditionalUV3 { get; internal set; }
         public Vector4 AdditionalUV4 { get; internal set; }
         public WeightTransformType WeightTransformType { get; internal set; }
-        public int BoneIndex1 { get; private set; }
-        public int BoneIndex2 { get; private set; }
-        public int BoneIndex3 { get; private set; }
-        public int BoneIndex4 { get; private set; }
-        public float Weight1 { get; private set; }
-        public float Weight2 { get; private set; }
-        public float Weight3 { get; private set; }
-        public float Weight4 { get; private set; }
-        public Vector3 C { get; private set; }
-        public Vector3 R0 { get; private set; }
-        public Vector3 R1 { get; private set; }
+        public int BoneIndex1 { get; internal set; }
+        public int BoneIndex2 { get; internal set; }
+        public int BoneIndex3 { get; internal set; }
+        public int BoneIndex4 { get; internal set; }
+        public float Weight1 { get; internal set; }
+        public float Weight2 { get; internal set; }
+        public float Weight3 { get; internal set; }
+        public float Weight4 { get; internal set; }
+        public Vector3 C { get; internal set; }
+        public Vector3 R0 { get; internal set; }
+        public Vector3 R1 { get; internal set; }
         public float EdgeRatio { get; internal set; }
-
-        public void SetBDEF1Params(int boneIndex1)
-        {
-            BoneIndex1 = boneIndex1;
-        }
-
-        public void SetBDEF2Params(int boneIndex1, int boneIndex2, float weight1, float weight2)
-        {
-            BoneIndex1 = boneIndex1;
-            BoneIndex2 = boneIndex2;
-            Weight1 = weight1;
-            Weight2 = weight2;
-        }
-
-        public void SetBDEF4Params(int boneIndex1, int boneIndex2, int boneIndex3, int boneIndex4, float weight1, float weight2, float weight3, float weight4)
-        {
-            BoneIndex1 = boneIndex1;
-            BoneIndex2 = boneIndex2;
-            BoneIndex3 = boneIndex3;
-            BoneIndex4 = boneIndex4;
-            Weight1 = weight1;
-            Weight2 = weight2;
-            Weight3 = weight3;
-            Weight4 = weight4;
-        }
-
-        public void SetSDEFParams(int boneIndex1, int boneIndex2, float weight1, float weight2, Vector3 c, Vector3 r0, Vector3 r1)
-        {
-            BoneIndex1 = boneIndex1;
-            BoneIndex2 = boneIndex2;
-            Weight1 = weight1;
-            Weight2 = weight2;
-            C = c;
-            R0 = r0;
-            R1 = r1;
-        }
-
-        public void SetQDEF4Params(int boneIndex1, int boneIndex2, int boneIndex3, int boneIndex4, float weight1, float weight2, float weight3, float weight4)
-        {
-            BoneIndex1 = boneIndex1;
-            BoneIndex2 = boneIndex2;
-            BoneIndex3 = boneIndex3;
-            BoneIndex4 = boneIndex4;
-            Weight1 = weight1;
-            Weight2 = weight2;
-            Weight3 = weight3;
-            Weight4 = weight4;
-        }
     }
 
     public struct Surface

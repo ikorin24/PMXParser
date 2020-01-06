@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -112,52 +111,47 @@ namespace MMDTools
                 vertex.WeightTransformType = (WeightTransformType)stream.NextByte();
                 switch(vertex.WeightTransformType) {
                     case WeightTransformType.BDEF1: {
-                        var boneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        vertex.SetBDEF1Params(boneIndex1);
+                        vertex.BoneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
                         break;
                     }
                     case WeightTransformType.BDEF2: {
-                        var boneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var weight1 = stream.NextSingle();
-                        var weight2 = 1f - weight1;
-                        vertex.SetBDEF2Params(boneIndex1, boneIndex2, weight1, weight2);
+                        vertex.BoneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.Weight1 = stream.NextSingle();
+                        vertex.Weight2 = 1f - vertex.Weight1;
                         break;
                     }
                     case WeightTransformType.BDEF4: {
-                        var boneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex3 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex4 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var weight1 = stream.NextSingle();
-                        var weight2 = stream.NextSingle();
-                        var weight3 = stream.NextSingle();
-                        var weight4 = stream.NextSingle();
-                        vertex.SetBDEF4Params(boneIndex1, boneIndex2, boneIndex3, boneIndex4, weight1, weight2, weight3, weight4);
+                        vertex.BoneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex3 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex4 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.Weight1 = stream.NextSingle();
+                        vertex.Weight2 = stream.NextSingle();
+                        vertex.Weight3 = stream.NextSingle();
+                        vertex.Weight4 = stream.NextSingle();
                         break;
                     }
                     case WeightTransformType.SDEF: {
-                        var boneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var weight1 = stream.NextSingle();
-                        var weight2 = 1f - weight1;
-                        var c = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                        var r0 = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                        var r1 = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
-                        vertex.SetSDEFParams(boneIndex1, boneIndex2, weight1, weight2, c, r0, r1);
+                        vertex.BoneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.Weight1 = stream.NextSingle();
+                        vertex.Weight2 = 1f - vertex.Weight1;
+                        vertex.C = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        vertex.R0 = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                        vertex.R1 = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                         break;
                     }
                     case WeightTransformType.QDEF: {
                         if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
-                        var boneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex3 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var boneIndex4 = stream.NextDataOfSize(localInfo.BoneIndexSize);
-                        var weight1 = stream.NextSingle();
-                        var weight2 = stream.NextSingle();
-                        var weight3 = stream.NextSingle();
-                        var weight4 = stream.NextSingle();
-                        vertex.SetQDEF4Params(boneIndex1, boneIndex2, boneIndex3, boneIndex4, weight1, weight2, weight3, weight4);
+                        vertex.BoneIndex1 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex2 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex3 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.BoneIndex4 = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                        vertex.Weight1 = stream.NextSingle();
+                        vertex.Weight2 = stream.NextSingle();
+                        vertex.Weight3 = stream.NextSingle();
+                        vertex.Weight4 = stream.NextSingle();
                         break;
                     }
                     default:
