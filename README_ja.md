@@ -82,3 +82,9 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 ### 2020/01/06 ver 0.9.1
 
 バグ修正と多少のパフォーマンス改善
+
+### 2020/01/09 ver 0.9.2
+
+- .NET Framework バージョンを追加
+- いくつかの型に`DebuggerDisplayAttribute`を追加
+- 

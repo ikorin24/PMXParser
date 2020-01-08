@@ -82,3 +82,8 @@ First Release
 ### 2020/01/06 ver 0.9.1
 
 Bug fix and performance improvement a little
+
+### 2020/01/09 ver 0.9.2
+
+- Add .NET Framework version
+- Add `DebuggerDisplayAttribute` to some types
