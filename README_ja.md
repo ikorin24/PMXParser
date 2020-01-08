@@ -87,4 +87,3 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 
 - .NET Framework バージョンを追加
 - いくつかの型に`DebuggerDisplayAttribute`を追加
-- 
