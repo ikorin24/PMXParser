@@ -65,6 +65,11 @@ namespace MMDTools
             ParseRigidBody(stream, ref localInfo, pmx);
             ParseJoint(stream, ref localInfo, pmx);
             ParseSoftBody(stream, ref localInfo, pmx);
+
+#if NETFRAMEWORK
+            StreamExtension.ClearBuffer();
+#endif
+
             return pmx;
         }
 
@@ -654,7 +659,8 @@ namespace MMDTools
                 Read(source, ref buf);
 #if NETFRAMEWORK
                 fixed(byte* p = buf) {
-                    return encoding.GetString(p, byteSize);
+                    // p is null if buf.Length == 0
+                    return (p != null) ? encoding.GetString(p, byteSize) : "";
                 }
 #else
                 return encoding.GetString(buf);
@@ -752,10 +758,16 @@ namespace MMDTools
         private static void Read(Stream stream, ref Span<byte> buf)
         {
 #if NETFRAMEWORK
-            var arrayBuf = Buffer.Buffer8;
-            if(stream.Read(arrayBuf, 0, buf.Length) != buf.Length) { throw new EndOfStreamException(); }
-            for(int i = 0; i < buf.Length; i++) {
-                buf[i] = arrayBuf[i];
+            var arrayBuf = Buffer.ArrayBuffer;
+            var len = buf.Length;
+            var pos = 0;
+            while(true) {
+                var readLen = (len < arrayBuf.Length) ? len : arrayBuf.Length;
+                if(stream.Read(arrayBuf, 0, readLen) != readLen) { throw new EndOfStreamException(); }
+                arrayBuf.AsSpan(0, readLen).CopyTo(buf.Slice(pos, readLen));                
+                pos += readLen;
+                len = buf.Length - pos;
+                if(len <= 0) { break; }
             }
 #else
             if(stream.Read(buf) != buf.Length) { throw new EndOfStreamException(); }
@@ -763,12 +775,18 @@ namespace MMDTools
         }
 
 #if NETFRAMEWORK
+
+        internal static void ClearBuffer() => Buffer.Clear();
+
+
         private static class Buffer
         {
             [ThreadStatic]
             private static byte[]? _buf;
 
-            public static byte[] Buffer8 => _buf ?? (_buf = new byte[8]);
+            public static byte[] ArrayBuffer => _buf ?? (_buf = new byte[64]);
+
+            public static void Clear() => _buf = null;
         }
 #endif
     }
