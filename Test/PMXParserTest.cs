@@ -7,7 +7,11 @@ namespace Test
 {
     public class PMXParserTest
     {
+#if NETFRAMEWORK
+        const string FILES = "../../../../Test/Files/";
+#else
         const string FILES = "../../../Files/";
+#endif
         const string HIDDEN = FILES +  "Hidden/";
 
         [Theory(DisplayName = "PMX Ver 2.0")]
