@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace MMDTools
@@ -68,7 +69,14 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
+#if NETFRAMEWORK
+            var hashCode = 1861411795;
+            hashCode = hashCode * -1521134295 + X.GetHashCode();
+            hashCode = hashCode * -1521134295 + Y.GetHashCode();
+            return hashCode;
+#else
             return HashCode.Combine(X, Y);
+#endif
         }
 
         public static bool operator ==(Vector2 left, Vector2 right)
@@ -109,7 +117,15 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
+#if NETFRAMEWORK
+            var hashCode = -307843816;
+            hashCode = hashCode * -1521134295 + X.GetHashCode();
+            hashCode = hashCode * -1521134295 + Y.GetHashCode();
+            hashCode = hashCode * -1521134295 + Z.GetHashCode();
+            return hashCode;
+#else
             return HashCode.Combine(X, Y, Z);
+#endif
         }
 
         public static bool operator ==(Vector3 left, Vector3 right)
@@ -153,7 +169,16 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
+#if NETFRAMEWORK
+            var hashCode = 707706286;
+            hashCode = hashCode * -1521134295 + X.GetHashCode();
+            hashCode = hashCode * -1521134295 + Y.GetHashCode();
+            hashCode = hashCode * -1521134295 + Z.GetHashCode();
+            hashCode = hashCode * -1521134295 + W.GetHashCode();
+            return hashCode;
+#else
             return HashCode.Combine(X, Y, Z, W);
+#endif
         }
 
         public static bool operator ==(Vector4 left, Vector4 right)
@@ -205,7 +230,16 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
+#if NETFRAMEWORK
+            var hashCode = 1960784236;
+            hashCode = hashCode * -1521134295 + R.GetHashCode();
+            hashCode = hashCode * -1521134295 + G.GetHashCode();
+            hashCode = hashCode * -1521134295 + B.GetHashCode();
+            hashCode = hashCode * -1521134295 + A.GetHashCode();
+            return hashCode;
+#else
             return HashCode.Combine(R, G, B, A);
+#endif
         }
 
         public static bool operator ==(Color left, Color right)
@@ -494,7 +528,16 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
+#if NETFRAMEWORK
+            var hashCode = -726125066;
+            hashCode = hashCode * -1521134295 + Bone.GetHashCode();
+            hashCode = hashCode * -1521134295 + IsEnableAngleLimited.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(MinLimit);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(MaxLimit);
+            return hashCode;
+#else
             return HashCode.Combine(Bone, IsEnableAngleLimited, MinLimit, MaxLimit);
+#endif
         }
 
         public static bool operator ==(IKLink left, IKLink right)
@@ -526,7 +569,14 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
+#if NETFRAMEWORK
+            var hashCode = -1023822300;
+            hashCode = hashCode * -1521134295 + TargetType.GetHashCode();
+            hashCode = hashCode * -1521134295 + TargetIndex.GetHashCode();
+            return hashCode;
+#else
             return HashCode.Combine(TargetType, TargetIndex);
+#endif
         }
 
         public static bool operator ==(DisplayFrameElement left, DisplayFrameElement right)
@@ -560,7 +610,15 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
+#if NETFRAMEWORK
+            var hashCode = -269592481;
+            hashCode = hashCode * -1521134295 + RigidBody.GetHashCode();
+            hashCode = hashCode * -1521134295 + Vertex.GetHashCode();
+            hashCode = hashCode * -1521134295 + IsNearMode.GetHashCode();
+            return hashCode;
+#else
             return HashCode.Combine(RigidBody, Vertex, IsNearMode);
+#endif
         }
 
         public static bool operator ==(AnchorRigidBody left, AnchorRigidBody right)

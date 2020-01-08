@@ -4,7 +4,7 @@
 
 ## What is This ?
 
-PMX file parser library of C#, .NET Standard 2.1. PMX file is MMD (*Miku Miku Dance*) model file.
+PMX file parser library of C# (.NET Standard 2.1 / .NET Framework 4.8). PMX file is MMD (*Miku Miku Dance*) model file.
 
 This parser parses PMX file into structual C# class.
 
@@ -29,11 +29,13 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 ## Requirements and Dependencies (On Building)
 
-- .NET Standard 2.1
+- .NET Standard 2.1 / .NET Framework 4.8
 - C# 8.0
 - `dotnet` command (.NET Core CLI Tools)
 
 ## Building
+
+### .NET Standard 2.1
 
 Windows, Mac, Linux
 
@@ -41,6 +43,16 @@ Windows, Mac, Linux
 $ dotnet build PMXParser/PMXParser.csproj -c Release
 
 # ---> PMXParser/bin/Release/netstandard2.1/PMXParser.dll
+```
+
+### .NET Framework 4.8
+
+Windows
+
+```sh
+$ dotnet build PMXParser/PMXParser.NetFramework.csproj -c Release
+
+# ---> PMXParser/bin/Release/net48/PMXParser.NetFramework.dll
 ```
 
 ## You don't Know PMX File Format ?

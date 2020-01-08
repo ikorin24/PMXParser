@@ -4,7 +4,7 @@
 
 ## これは何？
 
-PMX ファイルの C# (.NET Starndard 2.1) パーサーライブラリです。
+PMX ファイルの C# (.NET Standard 2.1 / .NET Framework 4.8) パーサーライブラリです。
 
 PMX ファイルは MMD (*Miku Miku Dance*) のモデルデータです。
 
@@ -31,7 +31,7 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 ## 必要環境と依存関係 (ビルド時)
 
-- .NET Standard 2.1
+- .NET Standard 2.1 / .NET Framework 4.8
 - C# 8.0
 - `dotnet` コマンド (.NET Core CLI ツール)
 
@@ -39,10 +39,22 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 Windows, Mac, Linux
 
+### .NET Standard 2.1
+
 ```sh
 $ dotnet build PMXParser/PMXParser.csproj -c Release
 
 # ---> PMXParser/bin/Release/netstandard2.1/PMXParser.dll
+```
+
+### .NET Framework 4.8
+
+Windows
+
+```sh
+$ dotnet build PMXParser/PMXParser.NetFramework.csproj -c Release
+
+# ---> PMXParser/bin/Release/net48/PMXParser.NetFramework.dll
 ```
 
 ## PMX ファイルフォーマットについて

@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 namespace MMDTools
 {
@@ -651,14 +652,24 @@ namespace MMDTools
             if(byteSize <= 128) {
                 Span<byte> buf = stackalloc byte[byteSize];
                 Read(source, ref buf);
+#if NETFRAMEWORK
+                fixed(byte* p = buf) {
+                    return encoding.GetString(p, byteSize);
+                }
+#else
                 return encoding.GetString(buf);
+#endif
             }
             else {
                 var ptr = Marshal.AllocHGlobal(byteSize);
                 try {
                     var buf = new Span<byte>((byte*)ptr, byteSize);
                     Read(source, ref buf);
+#if NETFRAMEWORK
+                    return encoding.GetString((byte*)ptr, byteSize);
+#else
                     return encoding.GetString(buf);
+#endif
                 }
                 finally {
                     Marshal.FreeHGlobal(ptr);
@@ -670,28 +681,44 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(int)];
             Read(source, ref buf);
+#if NETFRAMEWORK
+            return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
+#else
             return BitConverter.ToInt32(buf);
+#endif
         }
 
         public static short NextInt16(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(short)];
             Read(source, ref buf);
+#if NETFRAMEWORK
+            return Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf));
+#else
             return BitConverter.ToInt16(buf);
+#endif
         }
 
         public static ushort NextUint16(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(ushort)];
             Read(source, ref buf);
+#if NETFRAMEWORK
+            return Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(buf));
+#else
             return BitConverter.ToUInt16(buf);
+#endif
         }
 
         public static float NextSingle(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(float)];
             Read(source, ref buf);
+#if NETFRAMEWORK
+            return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buf));
+#else
             return BitConverter.ToSingle(buf);
+#endif
         }
 
         public static byte NextByte(this Stream source)
@@ -713,14 +740,36 @@ namespace MMDTools
             Span<byte> buf = stackalloc byte[4];
             var sliced = buf.Slice(buf.Length - byteSize, byteSize);     // for little endian
             Read(source, ref sliced);
+#if NETFRAMEWORK
+            return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
+#else
             return BitConverter.ToInt32(buf);
+#endif
         }
 
 
 
         private static void Read(Stream stream, ref Span<byte> buf)
         {
+#if NETFRAMEWORK
+            var arrayBuf = Buffer.Buffer8;
+            if(stream.Read(arrayBuf, 0, buf.Length) != buf.Length) { throw new EndOfStreamException(); }
+            for(int i = 0; i < buf.Length; i++) {
+                buf[i] = arrayBuf[i];
+            }
+#else
             if(stream.Read(buf) != buf.Length) { throw new EndOfStreamException(); }
+#endif
         }
+
+#if NETFRAMEWORK
+        private static class Buffer
+        {
+            [ThreadStatic]
+            private static byte[]? _buf;
+
+            public static byte[] Buffer8 => _buf ?? (_buf = new byte[8]);
+        }
+#endif
     }
 }
