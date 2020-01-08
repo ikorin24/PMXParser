@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace MMDTools
 {
@@ -45,6 +46,7 @@ namespace MMDTools
         }
     }
 
+    [DebuggerDisplay("({X}, {Y})")]
     public struct Vector2 : IEquatable<Vector2>
     {
         public float X;
@@ -90,6 +92,7 @@ namespace MMDTools
         }
     }
 
+    [DebuggerDisplay("({X}, {Y}, {Z})")]
     public struct Vector3 : IEquatable<Vector3>
     {
         public float X;
@@ -139,6 +142,7 @@ namespace MMDTools
         }
     }
 
+    [DebuggerDisplay("({X}, {Y}, {Z}, {W})")]
     public struct Vector4 : IEquatable<Vector4>
     {
         public float X;
@@ -192,6 +196,7 @@ namespace MMDTools
         }
     }
 
+    [DebuggerDisplay("(R={R}, G={G}, B={B}, A={A})")]
     public struct Color : IEquatable<Color>
     {
         public float R;
@@ -253,6 +258,7 @@ namespace MMDTools
         }
     }
 
+    [DebuggerDisplay("Pos=({Position.X}, {Position.Y}, {Position.Z})")]
     public class Vertex
     {
         public Vector3 Posision { get; internal set; }
@@ -278,6 +284,7 @@ namespace MMDTools
         public float EdgeRatio { get; internal set; }
     }
 
+    [DebuggerDisplay("({V1}, {V2}, {V3})")]
     public struct Surface
     {
         public int V1 { get; internal set; }
@@ -285,6 +292,7 @@ namespace MMDTools
         public int V3 { get; internal set; }
     }
 
+    [DebuggerDisplay("Material (Name={Name})")]
     public class Material
     {
         public string Name { get; internal set; } = string.Empty;
@@ -305,6 +313,7 @@ namespace MMDTools
         public int VertexCount { get; internal set; }
     }
 
+    [DebuggerDisplay("Bone (Name={Name})")]
     public class Bone
     {
         public string Name { get; internal set; } = string.Empty;
@@ -328,6 +337,7 @@ namespace MMDTools
         public ReadOnlyCollection<IKLink> IKLinks { get; internal set; } = null!;
     }
 
+    [DebuggerDisplay("Morph (Name={Name})")]
     public class Morph
     {
         public string Name { get; internal set; } = string.Empty;
@@ -343,18 +353,21 @@ namespace MMDTools
         public ReadOnlyCollection<ImpulseMorphElement> ImpulseMorphElements { get; internal set; } = null!;
     }
 
+    [DebuggerDisplay("GroupMorphElement (TargetMorph={TargetMorph})")]
     public class GroupMorphElement
     {
         public int TargetMorph { get; internal set; }
         public float MorphRatio { get; internal set; }
     }
 
+    [DebuggerDisplay("VertexMorphElement (TargetVertex={TargetVertex})")]
     public class VertexMorphElement
     {
         public int TargetVertex { get; internal set; }
         public Vector3 PosOffset { get; internal set; }
     }
 
+    [DebuggerDisplay("BoneMorphElement (TargetBone={TargetBone})")]
     public class BoneMorphElement
     {
         public int TargetBone { get; internal set; }
@@ -362,12 +375,14 @@ namespace MMDTools
         public Vector4 Quaternion { get; internal set; }
     }
 
+    [DebuggerDisplay("UVMorphElement (TargetVertex={TargetVertex})")]
     public class UVMorphElement
     {
         public int TargetVertex { get; internal set; }
         public Vector4 UVOffset { get; internal set; }
     }
 
+    [DebuggerDisplay("MaterialMorphElement (Material={Material})")]
     public class MaterialMorphElement
     {
         public int Material { get; internal set; }
@@ -384,12 +399,14 @@ namespace MMDTools
         public Color ToonTextureCoef { get; internal set; }
     }
 
+    [DebuggerDisplay("FlipMorphElement (TargetMorph={TargetMorph})")]
     public class FlipMorphElement
     {
         public int TargetMorph { get; internal set; }
         public float MorphRatio { get; internal set; }
     }
-    
+
+    [DebuggerDisplay("ImpulseMorphElement (TargetRigidBody={TargetRigidBody})")]
     public class ImpulseMorphElement
     {
         public int TargetRigidBody { get; internal set; }
@@ -398,6 +415,7 @@ namespace MMDTools
         public Vector3 RotationTorque { get; internal set; }
     }
 
+    [DebuggerDisplay("DisplayFrame (Name={Name})")]
     public class DisplayFrame
     {
         public string Name { get; internal set; } = string.Empty;
@@ -406,6 +424,7 @@ namespace MMDTools
         public ReadOnlyCollection<DisplayFrameElement> Elements { get; internal set; } = null!;
     }
 
+    [DebuggerDisplay("RigidBody (Name={Name})")]
     public class RigidBody
     {
         public string Name { get; internal set; } = string.Empty;
@@ -426,6 +445,7 @@ namespace MMDTools
         public RigidBodyPhysicsType PhysicsType { get; internal set; }
     }
 
+    [DebuggerDisplay("Joint (Name={Name})")]
     public class Joint
     {
         public string Name { get; internal set; } = string.Empty;
@@ -443,6 +463,7 @@ namespace MMDTools
         public Vector3 RotationSpring { get; internal set; }
     }
 
+    [DebuggerDisplay("SoftBody (Name={Name})")]
     public class SoftBody
     {
         public string Name { get; internal set; } = string.Empty;
@@ -506,6 +527,7 @@ namespace MMDTools
         public float VST { get; internal set; }
     }
 
+    [DebuggerDisplay("IKLink (Bone={Bone})")]
     public struct IKLink : IEquatable<IKLink>
     {
         public int Bone { get; internal set; }
@@ -551,6 +573,7 @@ namespace MMDTools
         }
     }
 
+    [DebuggerDisplay("DisplayFrameElement (TargetType={TargetType}, TargetIndex={TargetIndex})")]
     public struct DisplayFrameElement : IEquatable<DisplayFrameElement>
     {
         public DisplayFrameElementTarget TargetType { get; internal set; }
@@ -590,6 +613,7 @@ namespace MMDTools
         }
     }
 
+    [DebuggerDisplay("AnchorRigidBody (RigidBody={RigidBody}, Vertex={Vertex}, IsNearMode={IsNearMode})")]
     public struct AnchorRigidBody : IEquatable<AnchorRigidBody>
     {
         public int RigidBody { get; internal set; }
