@@ -32,11 +32,11 @@ namespace Test
 #endif
         public void PMXParseVer20(string fileName, PMXVersion version)
         {
-            PMXParser.GetVersion(fileName).Is(version);
+            Assert.Equal(version, PMXParser.GetVersion(fileName));
 
             using(var stream = File.OpenRead(fileName)) {
                 var pmx = PMXParser.Parse(stream);
-                stream.Position.Is(stream.Length);
+                Assert.Equal(stream.Length, stream.Position);
             }
         }
 
