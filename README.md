@@ -95,5 +95,7 @@ Bug fix and performance improvement a little
 
 ### 2020/01/12 ver 1.0.0
 
+[![nuget](https://img.shields.io/badge/nuget-v1.0.0-967CFF)](https://www.nuget.org/packages/PMXParser/1.0.0)
+
 - Change target .NET version into .NET Standard 2.1 and 2.0.
 - Fix small bugs.

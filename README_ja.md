@@ -95,5 +95,7 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 
 ### 2020/01/12 ver 1.0.0
 
+[![nuget](https://img.shields.io/badge/nuget-v1.0.0-967CFF)](https://www.nuget.org/packages/PMXParser/1.0.0)
+
 - ターゲットの .NET バージョンを .NET Standard 2.1 と 2.0に変更。
 - 微修正
