@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Buffers;
 
 namespace MMDTools
 {
@@ -65,11 +66,6 @@ namespace MMDTools
             ParseRigidBody(stream, ref localInfo, pmx);
             ParseJoint(stream, ref localInfo, pmx);
             ParseSoftBody(stream, ref localInfo, pmx);
-
-#if !NETSTANDARD2_1
-            StreamExtension.ClearBuffer();
-#endif
-
             return pmx;
         }
 
@@ -642,14 +638,27 @@ namespace MMDTools
     internal static class StreamExtension
     {
         // Do not rename or remove (Used in conditional compiled code)
-        public static void Skip(this Stream source, int byteSize)
+        public unsafe static void Skip(this Stream source, int byteSize)
         {
             // This is bad because some types of Stream throws NotSupportedException. (e.g. NetworkStream)
             // source.Position += byteSize
 
             // Use following instead.
-            Span<byte> buf = stackalloc byte[byteSize];
-            source.NextBytes(ref buf);
+            if(byteSize <= 128) {
+                Span<byte> buf = stackalloc byte[byteSize];
+                source.NextBytes(ref buf);
+            }
+            else {
+                var ptr = IntPtr.Zero;
+                try {
+                    ptr = Marshal.AllocHGlobal(byteSize);
+                    var buf = new Span<byte>((void*)ptr, byteSize);
+                    source.NextBytes(ref buf);
+                }
+                finally {
+                    if(ptr != IntPtr.Zero) { Marshal.FreeHGlobal(ptr); }
+                }
+            }
         }
 
         public unsafe static string NextString(this Stream source, int byteSize, Encoding encoding)
@@ -758,36 +767,17 @@ namespace MMDTools
         private static void Read(Stream stream, ref Span<byte> buf)
         {
 #if !NETSTANDARD2_1
-            var arrayBuf = Buffer.ArrayBuffer;
-            var len = buf.Length;
-            var pos = 0;
-            while(true) {
-                var readLen = (len < arrayBuf.Length) ? len : arrayBuf.Length;
-                if(stream.Read(arrayBuf, 0, readLen) != readLen) { throw new EndOfStreamException(); }
-                arrayBuf.AsSpan(0, readLen).CopyTo(buf.Slice(pos, readLen));                
-                pos += readLen;
-                len = buf.Length - pos;
-                if(len <= 0) { break; }
+            byte[] arrayBuf = ArrayPool<byte>.Shared.Rent(buf.Length);
+            try {
+                if(stream.Read(arrayBuf, 0, buf.Length) != buf.Length) { throw new EndOfStreamException(); }
+                buf = arrayBuf.AsSpan(0, buf.Length);
+            }
+            finally {
+                ArrayPool<byte>.Shared.Return(arrayBuf);
             }
 #else
             if(stream.Read(buf) != buf.Length) { throw new EndOfStreamException(); }
 #endif
         }
-
-#if !NETSTANDARD2_1
-
-        internal static void ClearBuffer() => Buffer.Clear();
-
-
-        private static class Buffer
-        {
-            [ThreadStatic]
-            private static byte[]? _buf;
-
-            public static byte[] ArrayBuffer => _buf ?? (_buf = new byte[64]);
-
-            public static void Clear() => _buf = null;
-        }
-#endif
     }
 }
