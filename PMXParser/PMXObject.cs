@@ -71,7 +71,7 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var hashCode = 1861411795;
             hashCode = hashCode * -1521134295 + X.GetHashCode();
             hashCode = hashCode * -1521134295 + Y.GetHashCode();
@@ -120,7 +120,7 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var hashCode = -307843816;
             hashCode = hashCode * -1521134295 + X.GetHashCode();
             hashCode = hashCode * -1521134295 + Y.GetHashCode();
@@ -173,7 +173,7 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var hashCode = 707706286;
             hashCode = hashCode * -1521134295 + X.GetHashCode();
             hashCode = hashCode * -1521134295 + Y.GetHashCode();
@@ -235,7 +235,7 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var hashCode = 1960784236;
             hashCode = hashCode * -1521134295 + R.GetHashCode();
             hashCode = hashCode * -1521134295 + G.GetHashCode();
@@ -550,7 +550,7 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var hashCode = -726125066;
             hashCode = hashCode * -1521134295 + Bone.GetHashCode();
             hashCode = hashCode * -1521134295 + IsEnableAngleLimited.GetHashCode();
@@ -592,7 +592,7 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var hashCode = -1023822300;
             hashCode = hashCode * -1521134295 + TargetType.GetHashCode();
             hashCode = hashCode * -1521134295 + TargetIndex.GetHashCode();
@@ -634,7 +634,7 @@ namespace MMDTools
 
         public override int GetHashCode()
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var hashCode = -269592481;
             hashCode = hashCode * -1521134295 + RigidBody.GetHashCode();
             hashCode = hashCode * -1521134295 + Vertex.GetHashCode();

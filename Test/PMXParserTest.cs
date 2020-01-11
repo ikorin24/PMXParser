@@ -7,7 +7,7 @@ namespace Test
 {
     public class PMXParserTest
     {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
         const string FILES = "../../../../Test/Files/";
 #else
         const string FILES = "../../../Files/";

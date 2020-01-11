@@ -66,7 +66,7 @@ namespace MMDTools
             ParseJoint(stream, ref localInfo, pmx);
             ParseSoftBody(stream, ref localInfo, pmx);
 
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             StreamExtension.ClearBuffer();
 #endif
 
@@ -657,7 +657,7 @@ namespace MMDTools
             if(byteSize <= 128) {
                 Span<byte> buf = stackalloc byte[byteSize];
                 Read(source, ref buf);
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
                 fixed(byte* p = buf) {
                     // p is null if buf.Length == 0
                     return (p != null) ? encoding.GetString(p, byteSize) : "";
@@ -671,7 +671,7 @@ namespace MMDTools
                 try {
                     var buf = new Span<byte>((byte*)ptr, byteSize);
                     Read(source, ref buf);
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
                     return encoding.GetString((byte*)ptr, byteSize);
 #else
                     return encoding.GetString(buf);
@@ -687,7 +687,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(int)];
             Read(source, ref buf);
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
 #else
             return BitConverter.ToInt32(buf);
@@ -698,7 +698,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(short)];
             Read(source, ref buf);
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf));
 #else
             return BitConverter.ToInt16(buf);
@@ -709,7 +709,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(ushort)];
             Read(source, ref buf);
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(buf));
 #else
             return BitConverter.ToUInt16(buf);
@@ -720,7 +720,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(float)];
             Read(source, ref buf);
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buf));
 #else
             return BitConverter.ToSingle(buf);
@@ -746,7 +746,7 @@ namespace MMDTools
             Span<byte> buf = stackalloc byte[4];
             var sliced = buf.Slice(buf.Length - byteSize, byteSize);     // for little endian
             Read(source, ref sliced);
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
 #else
             return BitConverter.ToInt32(buf);
@@ -757,7 +757,7 @@ namespace MMDTools
 
         private static void Read(Stream stream, ref Span<byte> buf)
         {
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
             var arrayBuf = Buffer.ArrayBuffer;
             var len = buf.Length;
             var pos = 0;
@@ -774,7 +774,7 @@ namespace MMDTools
 #endif
         }
 
-#if NETFRAMEWORK
+#if !NETSTANDARD2_1
 
         internal static void ClearBuffer() => Buffer.Clear();
 
