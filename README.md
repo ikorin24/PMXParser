@@ -4,7 +4,7 @@
 
 ## What is This ?
 
-PMX file parser library of C# (.NET Standard 2.1 / .NET Framework 4.8). PMX file is MMD (*Miku Miku Dance*) model file.
+PMX file parser library of C# (.NET Standard 2.1 / 2.0). PMX file is MMD (*Miku Miku Dance*) model file.
 
 This parser parses PMX file into structual C# class.
 
@@ -29,30 +29,32 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 ## Requirements and Dependencies (On Building)
 
-- .NET Standard 2.1 / .NET Framework 4.8
+- .NET Standard 2.1 / 2.0
 - C# 8.0
 - `dotnet` command (.NET Core CLI Tools)
 
-## Building
+## Installation
 
-### .NET Standard 2.1
+The package is published on Nuget.
+
+https://www.nuget.org/packages/PMXParser
+
+```sh
+# nuget package manager
+PM> Install-Package PMXParser
+```
+
+## Building
 
 Windows, Mac, Linux
 
 ```sh
+$ git clone https://github.com/ikorin24/PMXParser.git
+$ cd PMXParser
 $ dotnet build PMXParser/PMXParser.csproj -c Release
 
 # ---> PMXParser/bin/Release/netstandard2.1/PMXParser.dll
-```
-
-### .NET Framework 4.8
-
-Windows
-
-```sh
-$ dotnet build PMXParser/PMXParser.NetFramework.csproj -c Release
-
-# ---> PMXParser/bin/Release/net48/PMXParser.NetFramework.dll
+# ---> PMXParser/bin/Release/netstandard2.0/PMXParser.dll
 ```
 
 ## You don't Know PMX File Format ?
@@ -87,3 +89,8 @@ Bug fix and performance improvement a little
 
 - Add .NET Framework version
 - Add `DebuggerDisplayAttribute` to some types
+
+### 2020/01/12 ver 1.0.0
+
+- Change target .NET version into .NET Standard 2.1 and 2.0.
+- Fix small bugs.

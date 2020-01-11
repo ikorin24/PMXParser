@@ -4,7 +4,7 @@
 
 ## これは何？
 
-PMX ファイルの C# (.NET Standard 2.1 / .NET Framework 4.8) パーサーライブラリです。
+PMX ファイルの C# (.NET Standard 2.1 / 2.0) パーサーライブラリです。
 
 PMX ファイルは MMD (*Miku Miku Dance*) のモデルデータです。
 
@@ -31,30 +31,32 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 ## 必要環境と依存関係 (ビルド時)
 
-- .NET Standard 2.1 / .NET Framework 4.8
+- .NET Standard 2.1 / 2.0
 - C# 8.0
 - `dotnet` コマンド (.NET Core CLI ツール)
+
+## 導入方法
+
+パッケージを Nuget から取得できます。
+
+https://www.nuget.org/packages/PMXParser
+
+```sh
+# nuget パッケージマネージャー
+PM> Install-Package PMXParser
+```
 
 ## ビルド方法
 
 Windows, Mac, Linux
 
-### .NET Standard 2.1
-
 ```sh
+$ git clone https://github.com/ikorin24/PMXParser.git
+$ cd PMXParser
 $ dotnet build PMXParser/PMXParser.csproj -c Release
 
 # ---> PMXParser/bin/Release/netstandard2.1/PMXParser.dll
-```
-
-### .NET Framework 4.8
-
-Windows
-
-```sh
-$ dotnet build PMXParser/PMXParser.NetFramework.csproj -c Release
-
-# ---> PMXParser/bin/Release/net48/PMXParser.NetFramework.dll
+# ---> PMXParser/bin/Release/netstandard2.0/PMXParser.dll
 ```
 
 ## PMX ファイルフォーマットについて
@@ -87,3 +89,8 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 
 - .NET Framework バージョンを追加
 - いくつかの型に`DebuggerDisplayAttribute`を追加
+
+### 2020/01/12 ver 1.0.0
+
+- ターゲットの .NET バージョンを .NET Standard 2.1 と 2.0に変更。
+- 微修正
