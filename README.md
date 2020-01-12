@@ -99,3 +99,10 @@ Bug fix and performance improvement a little
 
 - Change target .NET version into .NET Standard 2.1 and 2.0.
 - Fix small bugs.
+
+### 2020/01/12 ver 1.0.1
+
+[![nuget](https://img.shields.io/badge/nuget-v1.0.1-967CFF)](https://www.nuget.org/packages/PMXParser/1.0.1)
+
+- Fix a big bug.
+    - Parse incorrect value in case of `byteSize` is not 4 in `NextDataOfSize` method.

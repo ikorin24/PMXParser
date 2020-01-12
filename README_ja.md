@@ -99,3 +99,10 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 
 - ターゲットの .NET バージョンを .NET Standard 2.1 と 2.0に変更。
 - 微修正
+
+### 2020/01/12 ver 1.0.1
+
+[![nuget](https://img.shields.io/badge/nuget-v1.0.1-967CFF)](https://www.nuget.org/packages/PMXParser/1.0.1)
+
+- 大きなバグ修正
+    - `NextDataOfSize`メソッドの`byteSize`が4でない場合、正しくない値を読み取っていた
