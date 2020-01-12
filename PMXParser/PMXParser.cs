@@ -29,8 +29,8 @@ namespace MMDTools
         public static PMXVersion GetVersion(Stream stream)
         {
             Span<byte> magicWord = stackalloc byte[4];
-            stream.NextBytes(ref magicWord);
-            PMXValidator.ValidateMagicWord(ref magicWord);
+            stream.NextBytes(magicWord);
+            PMXValidator.ValidateMagicWord(magicWord);
 
             var version = (PMXVersion)(int)(stream.NextSingle() * 10);
             PMXValidator.ValidateVersion(version);
@@ -72,17 +72,17 @@ namespace MMDTools
         private static void ParseHeader(Stream stream, out ParserLocalInfo localInfo, PMXObject pmx)
         {
             Span<byte> magicWord = stackalloc byte[4];
-            stream.NextBytes(ref magicWord);
-            PMXValidator.ValidateMagicWord(ref magicWord);
+            stream.NextBytes(magicWord);
+            PMXValidator.ValidateMagicWord(magicWord);
 
             var version = (PMXVersion)(int)(stream.NextSingle() * 10);
             PMXValidator.ValidateVersion(version);
 
             var infoLen = stream.NextByte();
             Span<byte> info = stackalloc byte[infoLen];
-            stream.NextBytes(ref info);
-            PMXValidator.ValidateHeaderInfo(ref info);
-            localInfo = new ParserLocalInfo(version, ref info);
+            stream.NextBytes(info);
+            PMXValidator.ValidateHeaderInfo(info);
+            localInfo = new ParserLocalInfo(version, info);
             pmx.Version = localInfo.Version;
         }
 
@@ -102,7 +102,7 @@ namespace MMDTools
             for(int i = 0; i < vertexCount; i++) {
                 var vertex = new Vertex();
                 vertexArray[i] = vertex;
-                vertex.Posision = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
+                vertex.Position = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 vertex.Normal = new Vector3(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                 vertex.UV = new Vector2(stream.NextSingle(), stream.NextSingle());
                 vertex.AdditionalUVCount = localInfo.AdditionalUVCount;
@@ -580,7 +580,7 @@ namespace MMDTools
             public byte MorphIndexSize { get; private set; }
             public byte RigidBodyIndexSize { get; private set; }
 
-            public ParserLocalInfo(PMXVersion version, ref Span<byte> info)
+            public ParserLocalInfo(PMXVersion version, ReadOnlySpan<byte> info)
             {
                 Version = version;
                 Encoding = info[0] switch
@@ -602,7 +602,7 @@ namespace MMDTools
 
     internal static class PMXValidator
     {
-        public static void ValidateMagicWord(ref Span<byte> magicWord)
+        public static void ValidateMagicWord(ReadOnlySpan<byte> magicWord)
         {
             // magic word : "PMX "
             Assert(magicWord[0] == 0x50 &&
@@ -617,7 +617,7 @@ namespace MMDTools
             Assert(version == PMXVersion.V20 || version == PMXVersion.V21, "Invalid or not supported version");
         }
 
-        public static void ValidateHeaderInfo(ref Span<byte> info)
+        public static void ValidateHeaderInfo(ReadOnlySpan<byte> info)
         {
             Assert(info[0] == 0 || info[0] == 1, "Invalid encode type");
             Assert(info[1] >= 0 || info[1] <= 4, "Invalid additional UV count");
@@ -646,14 +646,14 @@ namespace MMDTools
             // Use following instead.
             if(byteSize <= 128) {
                 Span<byte> buf = stackalloc byte[byteSize];
-                source.NextBytes(ref buf);
+                source.NextBytes(buf);
             }
             else {
                 var ptr = IntPtr.Zero;
                 try {
                     ptr = Marshal.AllocHGlobal(byteSize);
                     var buf = new Span<byte>((void*)ptr, byteSize);
-                    source.NextBytes(ref buf);
+                    source.NextBytes(buf);
                 }
                 finally {
                     if(ptr != IntPtr.Zero) { Marshal.FreeHGlobal(ptr); }
@@ -665,7 +665,7 @@ namespace MMDTools
         {
             if(byteSize <= 128) {
                 Span<byte> buf = stackalloc byte[byteSize];
-                Read(source, ref buf);
+                Read(source, buf);
 #if !NETSTANDARD2_1
                 fixed(byte* p = buf) {
                     // p is null if buf.Length == 0
@@ -679,7 +679,7 @@ namespace MMDTools
                 var ptr = Marshal.AllocHGlobal(byteSize);
                 try {
                     var buf = new Span<byte>((byte*)ptr, byteSize);
-                    Read(source, ref buf);
+                    Read(source, buf);
 #if !NETSTANDARD2_1
                     return encoding.GetString((byte*)ptr, byteSize);
 #else
@@ -695,7 +695,7 @@ namespace MMDTools
         public static int NextInt32(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(int)];
-            Read(source, ref buf);
+            Read(source, buf);
 #if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
 #else
@@ -706,7 +706,7 @@ namespace MMDTools
         public static short NextInt16(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(short)];
-            Read(source, ref buf);
+            Read(source, buf);
 #if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf));
 #else
@@ -717,7 +717,7 @@ namespace MMDTools
         public static ushort NextUint16(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(ushort)];
-            Read(source, ref buf);
+            Read(source, buf);
 #if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(buf));
 #else
@@ -728,7 +728,7 @@ namespace MMDTools
         public static float NextSingle(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(float)];
-            Read(source, ref buf);
+            Read(source, buf);
 #if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buf));
 #else
@@ -739,13 +739,13 @@ namespace MMDTools
         public static byte NextByte(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(byte)];
-            Read(source, ref buf);
+            Read(source, buf);
             return buf[0];
         }
 
-        public static void NextBytes(this Stream source, ref Span<byte> buf)
+        public static void NextBytes(this Stream source, Span<byte> buf)
         {
-            Read(source, ref buf);
+            Read(source, buf);
         }
 
         public static int NextDataOfSize(this Stream source, byte byteSize)
@@ -753,8 +753,8 @@ namespace MMDTools
             // byteSize must be [1 <= byteSize <= 4]
 
             Span<byte> buf = stackalloc byte[4];
-            var sliced = buf.Slice(buf.Length - byteSize, byteSize);     // for little endian
-            Read(source, ref sliced);
+            var sliced = buf.Slice(0, byteSize);
+            Read(source, sliced);
 #if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
 #else
@@ -764,13 +764,15 @@ namespace MMDTools
 
 
 
-        private static void Read(Stream stream, ref Span<byte> buf)
+        private static void Read(Stream stream, Span<byte> buf)
         {
 #if !NETSTANDARD2_1
             byte[] arrayBuf = ArrayPool<byte>.Shared.Rent(buf.Length);
             try {
                 if(stream.Read(arrayBuf, 0, buf.Length) != buf.Length) { throw new EndOfStreamException(); }
-                buf = arrayBuf.AsSpan(0, buf.Length);
+                for(int i = 0; i < buf.Length; i++) {
+                    buf[i] = arrayBuf[i];
+                }
             }
             finally {
                 ArrayPool<byte>.Shared.Return(arrayBuf);
