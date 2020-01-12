@@ -261,7 +261,7 @@ namespace MMDTools
     [DebuggerDisplay("Pos=({Position.X}, {Position.Y}, {Position.Z})")]
     public class Vertex
     {
-        public Vector3 Posision { get; internal set; }
+        public Vector3 Position { get; internal set; }
         public Vector3 Normal { get; internal set; }
         public Vector2 UV { get; internal set; }
         public int AdditionalUVCount { get; internal set; }
