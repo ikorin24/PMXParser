@@ -1,7 +1,7 @@
 # PMX Parser
 
 [![GitHub license](https://img.shields.io/github/license/ikorin24/PMXParser?color=967CFF)](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)
-[![nuget](https://img.shields.io/badge/nuget-v1.0.0-967CFF)](https://www.nuget.org/packages/PMXParser)
+[![nuget](https://img.shields.io/badge/nuget-v1.0.1-967CFF)](https://www.nuget.org/packages/PMXParser)
 
 [日本語](https://github.com/ikorin24/PMXParser/blob/master/README_ja.md)
 
