@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
@@ -80,17 +79,7 @@ namespace MMDTools
                    Y == other.Y;
         }
 
-        public override int GetHashCode()
-        {
-#if !NETSTANDARD2_1
-            var hashCode = 1861411795;
-            hashCode = hashCode * -1521134295 + X.GetHashCode();
-            hashCode = hashCode * -1521134295 + Y.GetHashCode();
-            return hashCode;
-#else
-            return HashCode.Combine(X, Y);
-#endif
-        }
+        public override int GetHashCode() => HashCode.Combine(X, Y);
 
         public static bool operator ==(Vector2 left, Vector2 right)
         {
@@ -129,18 +118,7 @@ namespace MMDTools
                    Z == other.Z;
         }
 
-        public override int GetHashCode()
-        {
-#if !NETSTANDARD2_1
-            var hashCode = -307843816;
-            hashCode = hashCode * -1521134295 + X.GetHashCode();
-            hashCode = hashCode * -1521134295 + Y.GetHashCode();
-            hashCode = hashCode * -1521134295 + Z.GetHashCode();
-            return hashCode;
-#else
-            return HashCode.Combine(X, Y, Z);
-#endif
-        }
+        public override int GetHashCode() => HashCode.Combine(X, Y, Z);
 
         public static bool operator ==(Vector3 left, Vector3 right)
         {
@@ -182,19 +160,7 @@ namespace MMDTools
                    W == other.W;
         }
 
-        public override int GetHashCode()
-        {
-#if !NETSTANDARD2_1
-            var hashCode = 707706286;
-            hashCode = hashCode * -1521134295 + X.GetHashCode();
-            hashCode = hashCode * -1521134295 + Y.GetHashCode();
-            hashCode = hashCode * -1521134295 + Z.GetHashCode();
-            hashCode = hashCode * -1521134295 + W.GetHashCode();
-            return hashCode;
-#else
-            return HashCode.Combine(X, Y, Z, W);
-#endif
-        }
+        public override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
 
         public static bool operator ==(Vector4 left, Vector4 right)
         {
@@ -244,19 +210,7 @@ namespace MMDTools
                    A == other.A;
         }
 
-        public override int GetHashCode()
-        {
-#if !NETSTANDARD2_1
-            var hashCode = 1960784236;
-            hashCode = hashCode * -1521134295 + R.GetHashCode();
-            hashCode = hashCode * -1521134295 + G.GetHashCode();
-            hashCode = hashCode * -1521134295 + B.GetHashCode();
-            hashCode = hashCode * -1521134295 + A.GetHashCode();
-            return hashCode;
-#else
-            return HashCode.Combine(R, G, B, A);
-#endif
-        }
+        public override int GetHashCode() => HashCode.Combine(R, G, B, A);
 
         public static bool operator ==(Color left, Color right)
         {
@@ -559,19 +513,7 @@ namespace MMDTools
                    MaxLimit.Equals(other.MaxLimit);
         }
 
-        public override int GetHashCode()
-        {
-#if !NETSTANDARD2_1
-            var hashCode = -726125066;
-            hashCode = hashCode * -1521134295 + Bone.GetHashCode();
-            hashCode = hashCode * -1521134295 + IsEnableAngleLimited.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(MinLimit);
-            hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(MaxLimit);
-            return hashCode;
-#else
-            return HashCode.Combine(Bone, IsEnableAngleLimited, MinLimit, MaxLimit);
-#endif
-        }
+        public override int GetHashCode() => HashCode.Combine(Bone, IsEnableAngleLimited, MinLimit, MaxLimit);
 
         public static bool operator ==(IKLink left, IKLink right)
         {
@@ -601,17 +543,7 @@ namespace MMDTools
                    TargetIndex == other.TargetIndex;
         }
 
-        public override int GetHashCode()
-        {
-#if !NETSTANDARD2_1
-            var hashCode = -1023822300;
-            hashCode = hashCode * -1521134295 + TargetType.GetHashCode();
-            hashCode = hashCode * -1521134295 + TargetIndex.GetHashCode();
-            return hashCode;
-#else
-            return HashCode.Combine(TargetType, TargetIndex);
-#endif
-        }
+        public override int GetHashCode() => HashCode.Combine(TargetType, TargetIndex);
 
         public static bool operator ==(DisplayFrameElement left, DisplayFrameElement right)
         {
@@ -643,18 +575,7 @@ namespace MMDTools
                    IsNearMode == other.IsNearMode;
         }
 
-        public override int GetHashCode()
-        {
-#if !NETSTANDARD2_1
-            var hashCode = -269592481;
-            hashCode = hashCode * -1521134295 + RigidBody.GetHashCode();
-            hashCode = hashCode * -1521134295 + Vertex.GetHashCode();
-            hashCode = hashCode * -1521134295 + IsNearMode.GetHashCode();
-            return hashCode;
-#else
-            return HashCode.Combine(RigidBody, Vertex, IsNearMode);
-#endif
-        }
+        public override int GetHashCode() => HashCode.Combine(RigidBody, Vertex, IsNearMode);
 
         public static bool operator ==(AnchorRigidBody left, AnchorRigidBody right)
         {
