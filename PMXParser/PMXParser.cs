@@ -745,14 +745,15 @@ namespace MMDTools
         {
             // byteSize must be [1 <= byteSize <= 4]
 
-            Span<byte> buf = stackalloc byte[4];
-            var sliced = buf.Slice(0, byteSize);
-            Read(source, sliced);
-#if !NETSTANDARD2_1
-            return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
-#else
-            return BitConverter.ToInt32(buf);
-#endif
+            Span<byte> buf = stackalloc byte[byteSize];
+            Read(source, buf);
+            return byteSize switch
+            {
+                1 => (int)(sbyte)buf[0],
+                2 => (int)Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf)),
+                4 => Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf)),
+                _ => throw new InvalidOperationException("Invalid byte size. Byte size must be 1, 2, or 4."),
+            };
         }
 
 
