@@ -272,7 +272,7 @@ namespace MMDTools
                     bone.MaxRadianPerIter = stream.NextSingle();
                     bone.IKLinkCount = stream.NextInt32();
                     var ikLinks = new IKLink[bone.IKLinkCount];
-                    bone.IKLinks = new ReadOnlyCollection<IKLink>(ikLinks);
+                    bone.IKLinks = ikLinks;
                     for(int j = 0; j < ikLinks.Length; j++) {
                         ikLinks[j].Bone = stream.NextDataOfSize(localInfo.BoneIndexSize);
                         ikLinks[j].IsEnableAngleLimited = stream.NextByte() switch
@@ -306,7 +306,7 @@ namespace MMDTools
                 switch(morph.MorphType) {
                     case MorphType.Group: {
                         var groupMorphElements = new GroupMorphElement[elementCount];
-                        morph.GroupMorphElements = new ReadOnlyCollection<GroupMorphElement>(groupMorphElements);
+                        morph.GroupMorphElements = groupMorphElements;
                         for(int j = 0; j < groupMorphElements.Length; j++) {
                             groupMorphElements[j] = new GroupMorphElement();
                             groupMorphElements[j].TargetMorph = stream.NextDataOfSize(localInfo.MorphIndexSize);
@@ -316,7 +316,7 @@ namespace MMDTools
                     }
                     case MorphType.Vertex: {
                         var vertexMorphElements = new VertexMorphElement[elementCount];
-                        morph.VertexMorphElements = new ReadOnlyCollection<VertexMorphElement>(vertexMorphElements);
+                        morph.VertexMorphElements = vertexMorphElements;
                         for(int j = 0; j < vertexMorphElements.Length; j++) {
                             vertexMorphElements[j] = new VertexMorphElement();
                             vertexMorphElements[j].TargetVertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
@@ -326,7 +326,7 @@ namespace MMDTools
                     }
                     case MorphType.Bone: {
                         var boneMorphElements = new BoneMorphElement[elementCount];
-                        morph.BoneMorphElements = new ReadOnlyCollection<BoneMorphElement>(boneMorphElements);
+                        morph.BoneMorphElements = boneMorphElements;
                         for(int j = 0; j < boneMorphElements.Length; j++) {
                             boneMorphElements[j] = new BoneMorphElement();
                             boneMorphElements[j].TargetBone = stream.NextDataOfSize(localInfo.BoneIndexSize);
@@ -341,7 +341,7 @@ namespace MMDTools
                     case MorphType.AdditionalUV3:
                     case MorphType.AdditionalUV4: {
                         var uvMorphElements = new UVMorphElement[elementCount];
-                        morph.UVMorphElements = new ReadOnlyCollection<UVMorphElement>(uvMorphElements);
+                        morph.UVMorphElements = uvMorphElements;
                         for(int j = 0; j < uvMorphElements.Length; j++) {
                             uvMorphElements[j] = new UVMorphElement();
                             uvMorphElements[j].TargetVertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
@@ -351,7 +351,7 @@ namespace MMDTools
                     }
                     case MorphType.Material: {
                         var materialMorphElements = new MaterialMorphElement[elementCount];
-                        morph.MaterialMorphElements = new ReadOnlyCollection<MaterialMorphElement>(materialMorphElements);
+                        morph.MaterialMorphElements = materialMorphElements;
                         for(int j = 0; j < materialMorphElements.Length; j++) {
                             materialMorphElements[j] = new MaterialMorphElement();
                             materialMorphElements[j].Material = stream.NextDataOfSize(localInfo.MaterialIndexSize);
@@ -371,7 +371,7 @@ namespace MMDTools
                     case MorphType.Flip: {
                         if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
                         var flipMorphElements = new FlipMorphElement[elementCount];
-                        morph.FlipMorphElements = new ReadOnlyCollection<FlipMorphElement>(flipMorphElements);
+                        morph.FlipMorphElements = flipMorphElements;
                         for(int j = 0; j < flipMorphElements.Length; j++) {
                             flipMorphElements[j] = new FlipMorphElement();
                             flipMorphElements[j].TargetMorph = stream.NextDataOfSize(localInfo.MorphIndexSize);
@@ -382,7 +382,7 @@ namespace MMDTools
                     case MorphType.Impulse: {
                         if(localInfo.Version < PMXVersion.V21) { throw new FormatException(); }
                         var impulseMorphElements = new ImpulseMorphElement[elementCount];
-                        morph.ImpulseMorphElements = new ReadOnlyCollection<ImpulseMorphElement>(impulseMorphElements);
+                        morph.ImpulseMorphElements = impulseMorphElements;
                         for(int j = 0; j < impulseMorphElements.Length; j++) {
                             impulseMorphElements[j] = new ImpulseMorphElement();
                             impulseMorphElements[j].TargetRigidBody = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
@@ -395,13 +395,6 @@ namespace MMDTools
                     default:
                         throw new FormatException($"Invalid morph type : {morph.MorphType}");
                 }
-                morph.GroupMorphElements    ??= new ReadOnlyCollection<GroupMorphElement>(Array.Empty<GroupMorphElement>());
-                morph.VertexMorphElements   ??= new ReadOnlyCollection<VertexMorphElement>(Array.Empty<VertexMorphElement>());
-                morph.BoneMorphElements     ??= new ReadOnlyCollection<BoneMorphElement>(Array.Empty<BoneMorphElement>());
-                morph.UVMorphElements       ??= new ReadOnlyCollection<UVMorphElement>(Array.Empty<UVMorphElement>());
-                morph.MaterialMorphElements ??= new ReadOnlyCollection<MaterialMorphElement>(Array.Empty<MaterialMorphElement>());
-                morph.FlipMorphElements     ??= new ReadOnlyCollection<FlipMorphElement>(Array.Empty<FlipMorphElement>());
-                morph.ImpulseMorphElements  ??= new ReadOnlyCollection<ImpulseMorphElement>(Array.Empty<ImpulseMorphElement>());
             }
         }
 
@@ -418,7 +411,7 @@ namespace MMDTools
                 displayFrame.Type = (DisplayFrameType)stream.NextByte();
                 var elementCount = stream.NextInt32();
                 var elements = new DisplayFrameElement[elementCount];
-                displayFrame.Elements = new ReadOnlyCollection<DisplayFrameElement>(elements);
+                displayFrame.Elements = elements;
                 for(int j = 0; j < elements.Length; j++) {
                     elements[j] = new DisplayFrameElement();
                     elements[j].TargetType = (DisplayFrameElementTarget)stream.NextByte();
@@ -552,7 +545,7 @@ namespace MMDTools
 
                 var anchorRigidBodyCount = stream.NextInt32();
                 var anchors = new AnchorRigidBody[anchorRigidBodyCount];
-                softBody.AnchorRigidBodies = new ReadOnlyCollection<AnchorRigidBody>(anchors);
+                softBody.AnchorRigidBodies = anchors;
                 for(int j = 0; j < anchors.Length; j++) {
                     anchors[j].RigidBody = stream.NextDataOfSize(localInfo.RigidBodyIndexSize);
                     anchors[j].Vertex = stream.NextDataOfSize(localInfo.VertexIndexSize);
@@ -561,7 +554,7 @@ namespace MMDTools
 
                 var pinnedVertexCount = stream.NextInt32();
                 var pinnedVertex = new int[pinnedVertexCount];
-                softBody.PinnedVertex = new ReadOnlyCollection<int>(pinnedVertex);
+                softBody.PinnedVertex = pinnedVertex;
                 for(int j = 0; j < pinnedVertex.Length; j++) {
                     pinnedVertex[j] = stream.NextDataOfSize(localInfo.VertexIndexSize);
                 }

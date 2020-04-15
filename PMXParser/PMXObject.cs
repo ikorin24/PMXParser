@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace MMDTools
@@ -299,7 +298,7 @@ namespace MMDTools
         public int IterCount { get; internal set; }
         public float MaxRadianPerIter { get; internal set; }
         public int IKLinkCount { get; internal set; }
-        public ReadOnlyCollection<IKLink> IKLinks { get; internal set; } = null!;
+        public ReadOnlyMemory<IKLink> IKLinks { get; internal set; }
     }
 
     [DebuggerDisplay("Morph (Name={Name})")]
@@ -309,13 +308,13 @@ namespace MMDTools
         public string NameEnglish { get; internal set; } = string.Empty;
         public MorphTarget MorphTarget { get; internal set; }
         public MorphType MorphType { get; internal set; }
-        public ReadOnlyCollection<GroupMorphElement> GroupMorphElements { get; internal set; } = null!;
-        public ReadOnlyCollection<VertexMorphElement> VertexMorphElements { get; internal set; } = null!;
-        public ReadOnlyCollection<BoneMorphElement> BoneMorphElements { get; internal set; } = null!;
-        public ReadOnlyCollection<UVMorphElement> UVMorphElements { get; internal set; } = null!;
-        public ReadOnlyCollection<MaterialMorphElement> MaterialMorphElements { get; internal set; } = null!;
-        public ReadOnlyCollection<FlipMorphElement> FlipMorphElements { get; internal set; } = null!;
-        public ReadOnlyCollection<ImpulseMorphElement> ImpulseMorphElements { get; internal set; } = null!;
+        public ReadOnlyMemory<GroupMorphElement> GroupMorphElements { get; internal set; }
+        public ReadOnlyMemory<VertexMorphElement> VertexMorphElements { get; internal set; }
+        public ReadOnlyMemory<BoneMorphElement> BoneMorphElements { get; internal set; }
+        public ReadOnlyMemory<UVMorphElement> UVMorphElements { get; internal set; }
+        public ReadOnlyMemory<MaterialMorphElement> MaterialMorphElements { get; internal set; }
+        public ReadOnlyMemory<FlipMorphElement> FlipMorphElements { get; internal set; }
+        public ReadOnlyMemory<ImpulseMorphElement> ImpulseMorphElements { get; internal set; }
     }
 
     [DebuggerDisplay("GroupMorphElement (TargetMorph={TargetMorph})")]
@@ -386,7 +385,7 @@ namespace MMDTools
         public string Name { get; internal set; } = string.Empty;
         public string NameEnglish { get; internal set; } = string.Empty;
         public DisplayFrameType Type { get; internal set; }
-        public ReadOnlyCollection<DisplayFrameElement> Elements { get; internal set; } = null!;
+        public ReadOnlyMemory<DisplayFrameElement> Elements { get; internal set; }
     }
 
     [DebuggerDisplay("RigidBody (Name={Name})")]
@@ -447,8 +446,8 @@ namespace MMDTools
         public SoftBodyCluster Cluster { get; internal set; } = null!;
         public SoftBodyIteration Iteration { get; internal set; } = null!;
         public SoftBodyMaterial Material { get; internal set; } = null!;
-        public ReadOnlyCollection<AnchorRigidBody> AnchorRigidBodies { get; internal set; } = null!;
-        public ReadOnlyCollection<int> PinnedVertex { get; internal set; } = null!;
+        public ReadOnlyMemory<AnchorRigidBody> AnchorRigidBodies { get; internal set; }
+        public ReadOnlyMemory<int> PinnedVertex { get; internal set; }
     }
 
     public class SoftBodyConfig
