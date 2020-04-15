@@ -98,7 +98,7 @@ namespace MMDTools
         {
             var vertexCount = stream.NextInt32();
             var vertexArray = new Vertex[vertexCount];
-            pmx.VertexList = new ReadOnlyCollection<Vertex>(vertexArray);
+            pmx.VertexList = vertexArray;
             for(int i = 0; i < vertexCount; i++) {
                 var vertex = new Vertex();
                 vertexArray[i] = vertex;
@@ -168,7 +168,7 @@ namespace MMDTools
             var count = stream.NextInt32();
             if(count % 3 != 0) { throw new FormatException(); }
             var surfaceArray = new Surface[count / 3];
-            pmx.SurfaceList = new ReadOnlyCollection<Surface>(surfaceArray);
+            pmx.SurfaceList = surfaceArray;
             for(int i = 0; i < surfaceArray.Length; i++) {
                 surfaceArray[i].V1 = stream.NextDataOfSize(localInfo.VertexIndexSize);
                 surfaceArray[i].V2 = stream.NextDataOfSize(localInfo.VertexIndexSize);
@@ -180,7 +180,7 @@ namespace MMDTools
         {
             var textureCount = stream.NextInt32();
             var textureArray = new string[textureCount];
-            pmx.TextureList = new ReadOnlyCollection<string>(textureArray);
+            pmx.TextureList = textureArray;
             for(int i = 0; i < textureArray.Length; i++) {
                 textureArray[i] = stream.NextString(stream.NextInt32(), localInfo.Encoding);
             }
@@ -190,7 +190,7 @@ namespace MMDTools
         {
             var materialCount = stream.NextInt32();
             var materialArray = new Material[materialCount];
-            pmx.MaterialList = new ReadOnlyCollection<Material>(materialArray);
+            pmx.MaterialList = materialArray;
             for(int i = 0; i < materialCount; i++) {
                 var material = new Material();
                 materialArray[i] = material;
@@ -236,7 +236,7 @@ namespace MMDTools
         {
             var boneCount = stream.NextInt32();
             var boneArray = new Bone[boneCount];
-            pmx.BoneList = new ReadOnlyCollection<Bone>(boneArray);
+            pmx.BoneList = boneArray;
             for(int i = 0; i < boneCount; i++) {
                 var bone = new Bone();
                 boneArray[i] = bone;
@@ -294,7 +294,7 @@ namespace MMDTools
         {
             var morphCount = stream.NextInt32();
             var morphArray = new Morph[morphCount];
-            pmx.MorphList = new ReadOnlyCollection<Morph>(morphArray);
+            pmx.MorphList = morphArray;
             for(int i = 0; i < morphCount; i++) {
                 var morph = new Morph();
                 morphArray[i] = morph;
@@ -409,7 +409,7 @@ namespace MMDTools
         {
             var displayFrameCount = stream.NextInt32();
             var displayFrameArray = new DisplayFrame[displayFrameCount];
-            pmx.DisplayFrameList = new ReadOnlyCollection<DisplayFrame>(displayFrameArray);
+            pmx.DisplayFrameList = displayFrameArray;
             for(int i = 0; i < displayFrameCount; i++) {
                 var displayFrame = new DisplayFrame();
                 displayFrameArray[i] = displayFrame;
@@ -436,7 +436,7 @@ namespace MMDTools
         {
             var rigidBodyCount = stream.NextInt32();
             var rigidBodyArray = new RigidBody[rigidBodyCount];
-            pmx.RigidBodyList = new ReadOnlyCollection<RigidBody>(rigidBodyArray);
+            pmx.RigidBodyList = rigidBodyArray;
             for(int i = 0; i < rigidBodyArray.Length; i++) {
                 var rigidBody = new RigidBody();
                 rigidBodyArray[i] = rigidBody;
@@ -462,7 +462,7 @@ namespace MMDTools
         {
             var jointCount = stream.NextInt32();
             var jointArray = new Joint[jointCount];
-            pmx.JointList = new ReadOnlyCollection<Joint>(jointArray);
+            pmx.JointList = jointArray;
             for(int i = 0; i < jointArray.Length; i++) {
                 var joint = new Joint();
                 jointArray[i] = joint;
@@ -489,12 +489,12 @@ namespace MMDTools
         private static void ParseSoftBody(Stream stream, ref ParserLocalInfo localInfo, PMXObject pmx)
         {
             if(localInfo.Version < PMXVersion.V21) {
-                pmx.SoftBodyList = new ReadOnlyCollection<SoftBody>(Array.Empty<SoftBody>());
+                pmx.SoftBodyList = ReadOnlyMemory<SoftBody>.Empty;
                 return;
             }
             var softBodyCount = stream.NextInt32();
             var softBodyArray = new SoftBody[softBodyCount];
-            pmx.SoftBodyList = new ReadOnlyCollection<SoftBody>(softBodyArray);
+            pmx.SoftBodyList = softBodyArray;
             for(int i = 0; i < softBodyArray.Length; i++) {
                 var softBody = new SoftBody();
                 softBodyArray[i] = softBody;

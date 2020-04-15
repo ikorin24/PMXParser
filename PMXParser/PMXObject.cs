@@ -9,6 +9,7 @@ namespace MMDTools
     /// <summary>PMX data object</summary>
     public class PMXObject
     {
+        /// <summary>Get PMX file version</summary>
         public PMXVersion Version { get; internal set; }
 
         /// <summary>Get name of pmx data</summary>
@@ -20,25 +21,35 @@ namespace MMDTools
         /// <summary>Get English comment of pmx data</summary>
         public string CommentEnglish { get; internal set; } = string.Empty;
 
-        public ReadOnlyCollection<Vertex> VertexList { get; internal set; } = null!;
+        /// <summary>Get <see cref="Vertex"/> list</summary>
+        public ReadOnlyMemory<Vertex> VertexList { get; internal set; }
 
-        public ReadOnlyCollection<Surface> SurfaceList { get; internal set; } = null!;
+        /// <summary>Get <see cref="Surface"/> list</summary>
+        public ReadOnlyMemory<Surface> SurfaceList { get; internal set; }
 
-        public ReadOnlyCollection<string> TextureList { get; internal set; } = null!;
+        /// <summary>Get list of texture file path</summary>
+        public ReadOnlyMemory<string> TextureList { get; internal set; }
 
-        public ReadOnlyCollection<Material> MaterialList { get; internal set; } = null!;
+        /// <summary>Get <see cref="Material"/> list</summary>
+        public ReadOnlyMemory<Material> MaterialList { get; internal set; }
 
-        public ReadOnlyCollection<Bone> BoneList { get; internal set; } = null!;
+        /// <summary>Get <see cref="Bone"/> list</summary>
+        public ReadOnlyMemory<Bone> BoneList { get; internal set; }
 
-        public ReadOnlyCollection<Morph> MorphList { get; internal set; } = null!;
+        /// <summary>Get <see cref="Morph"/> list</summary>
+        public ReadOnlyMemory<Morph> MorphList { get; internal set; }
 
-        public ReadOnlyCollection<DisplayFrame> DisplayFrameList { get; internal set; } = null!;
+        /// <summary>Get <see cref="DisplayFrame"/> list</summary>
+        public ReadOnlyMemory<DisplayFrame> DisplayFrameList { get; internal set; }
+        
+        /// <summary>Get <see cref="RigidBody"/> list</summary>
+        public ReadOnlyMemory<RigidBody> RigidBodyList { get; internal set; }
 
-        public ReadOnlyCollection<RigidBody> RigidBodyList { get; internal set; } = null!;
+        /// <summary>Get <see cref="Joint"/> list</summary>
+        public ReadOnlyMemory<Joint> JointList { get; internal set; }
 
-        public ReadOnlyCollection<Joint> JointList { get; internal set; } = null!;
-
-        public ReadOnlyCollection<SoftBody> SoftBodyList { get; internal set; } = null!;
+        /// <summary>Get <see cref="SoftBody"/> list</summary>
+        public ReadOnlyMemory<SoftBody> SoftBodyList { get; internal set; }
 
         internal PMXObject()
         {
