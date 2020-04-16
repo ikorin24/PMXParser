@@ -220,14 +220,7 @@ namespace MMDTools
                         throw new FormatException("Invalid shared toon mode");
                 }
 
-                // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                // If memo is not useful, use following code instead.
-#if true
                 material.Memo = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-#else
-                stream.Skip(stream.NextInt32());
-#endif
-                // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 material.VertexCount = stream.NextInt32();   // always can be devided by three
             }
         }
@@ -630,56 +623,21 @@ namespace MMDTools
 
     internal static class StreamExtension
     {
-        // Do not rename or remove (Used in conditional compiled code)
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void Skip(this Stream source, int byteSize)
-        {
-            // This is bad because some types of Stream throws NotSupportedException. (e.g. NetworkStream)
-            // source.Position += byteSize
-
-            // Use following instead.
-            if(byteSize <= 128) {
-                Span<byte> buf = stackalloc byte[byteSize];
-                source.NextBytes(buf);
-            }
-            else {
-                var ptr = IntPtr.Zero;
-                try {
-                    ptr = Marshal.AllocHGlobal(byteSize);
-                    var buf = new Span<byte>((void*)ptr, byteSize);
-                    source.NextBytes(buf);
-                }
-                finally {
-                    if(ptr != IntPtr.Zero) { Marshal.FreeHGlobal(ptr); }
-                }
-            }
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static string NextString(this Stream source, int byteSize, Encoding encoding)
         {
             if(byteSize <= 128) {
-                Span<byte> buf = stackalloc byte[byteSize];
-                Read(source, buf);
-#if !NETSTANDARD2_1
-                fixed(byte* p = buf) {
-                    // p is null if buf.Length == 0
-                    return (p != null) ? encoding.GetString(p, byteSize) : "";
-                }
-#else
-                return encoding.GetString(buf);
-#endif
+                if(byteSize == 0) { return ""; }
+                var buf = stackalloc byte[byteSize];
+                Read(source, new Span<byte>(buf, byteSize));
+                return encoding.GetString(buf, byteSize);
             }
             else {
                 var ptr = Marshal.AllocHGlobal(byteSize);
                 try {
                     var buf = new Span<byte>((byte*)ptr, byteSize);
                     Read(source, buf);
-#if !NETSTANDARD2_1
                     return encoding.GetString((byte*)ptr, byteSize);
-#else
-                    return encoding.GetString(buf);
-#endif
                 }
                 finally {
                     Marshal.FreeHGlobal(ptr);
@@ -692,11 +650,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(int)];
             Read(source, buf);
-#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
-#else
-            return BitConverter.ToInt32(buf);
-#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -704,11 +658,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(short)];
             Read(source, buf);
-#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf));
-#else
-            return BitConverter.ToInt16(buf);
-#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -716,11 +666,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(ushort)];
             Read(source, buf);
-#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(buf));
-#else
-            return BitConverter.ToUInt16(buf);
-#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -728,11 +674,7 @@ namespace MMDTools
         {
             Span<byte> buf = stackalloc byte[sizeof(float)];
             Read(source, buf);
-#if !NETSTANDARD2_1
             return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buf));
-#else
-            return BitConverter.ToSingle(buf);
-#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
