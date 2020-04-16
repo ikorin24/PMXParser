@@ -631,6 +631,7 @@ namespace MMDTools
     internal static class StreamExtension
     {
         // Do not rename or remove (Used in conditional compiled code)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static void Skip(this Stream source, int byteSize)
         {
             // This is bad because some types of Stream throws NotSupportedException. (e.g. NetworkStream)
@@ -654,6 +655,7 @@ namespace MMDTools
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static string NextString(this Stream source, int byteSize, Encoding encoding)
         {
             if(byteSize <= 128) {
@@ -685,6 +687,7 @@ namespace MMDTools
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int NextInt32(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(int)];
@@ -696,6 +699,7 @@ namespace MMDTools
 #endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short NextInt16(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(short)];
@@ -707,6 +711,7 @@ namespace MMDTools
 #endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort NextUint16(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(ushort)];
@@ -718,6 +723,7 @@ namespace MMDTools
 #endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float NextSingle(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(float)];
@@ -729,6 +735,7 @@ namespace MMDTools
 #endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte NextByte(this Stream source)
         {
             Span<byte> buf = stackalloc byte[sizeof(byte)];
@@ -736,11 +743,13 @@ namespace MMDTools
             return buf[0];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void NextBytes(this Stream source, Span<byte> buf)
         {
             Read(source, buf);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int NextDataOfSize(this Stream source, byte byteSize)
         {
             // byteSize must be [1 <= byteSize <= 4]
@@ -757,16 +766,14 @@ namespace MMDTools
         }
 
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Read(Stream stream, Span<byte> buf)
         {
 #if !NETSTANDARD2_1
             byte[] arrayBuf = ArrayPool<byte>.Shared.Rent(buf.Length);
             try {
                 if(stream.Read(arrayBuf, 0, buf.Length) != buf.Length) { throw new EndOfStreamException(); }
-                for(int i = 0; i < buf.Length; i++) {
-                    buf[i] = arrayBuf[i];
-                }
+                arrayBuf.AsSpan(0, buf.Length).CopyTo(buf);
             }
             finally {
                 ArrayPool<byte>.Shared.Return(arrayBuf);
