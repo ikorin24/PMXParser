@@ -9,10 +9,10 @@ using System.Buffers;
 
 namespace MMDTools
 {
-    /// <summary>PMX data parser class</summary>
+    /// <summary>PMX data parser class. This class is thread-safe.</summary>
     public static class PMXParser
     {
-        /// <summary>Get PMX data version from specified file</summary>
+        /// <summary>Get PMX data version from specified file. This method is thread-safe.</summary>
         /// <param name="fileName">file name of PMX data</param>
         /// <returns>PMX file version</returns>
         public static PMXVersion GetVersion(string fileName)
@@ -23,7 +23,7 @@ namespace MMDTools
             }
         }
 
-        /// <summary>Get PMX data version from specified stream</summary>
+        /// <summary>Get PMX data version from specified stream. This method is thread-safe.</summary>
         /// <param name="stream">stream of PMX data</param>
         /// <returns>PMX file version</returns>
         public static PMXVersion GetVersion(Stream stream)
@@ -41,7 +41,7 @@ namespace MMDTools
             }
         }
 
-        /// <summary>Parse PMX data from specified file</summary>
+        /// <summary>Parse PMX data from specified file. This method is thread-safe.</summary>
         /// <param name="fileName">file name of PMX data</param>
         /// <returns>PMX object</returns>
         public static PMXObject Parse(string fileName)
@@ -52,7 +52,7 @@ namespace MMDTools
             }
         }
 
-        /// <summary>Parse PMX data from specified stream</summary>
+        /// <summary>Parse PMX data from specified stream. This method is thread-safe.</summary>
         /// <param name="stream">stream of PMX data</param>
         /// <returns>PMX object</returns>
         public static PMXObject Parse(Stream stream)
