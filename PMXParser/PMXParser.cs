@@ -28,13 +28,17 @@ namespace MMDTools
         /// <returns>PMX file version</returns>
         public static PMXVersion GetVersion(Stream stream)
         {
-            Span<byte> magicWord = stackalloc byte[4];
-            stream.NextBytes(magicWord);
-            PMXValidator.ValidateMagicWord(magicWord);
+            try {
+                stream.NextBytes(4, out var magicWord);
+                PMXValidator.ValidateMagicWord(magicWord);
 
-            var version = (PMXVersion)(int)(stream.NextSingle() * 10);
-            PMXValidator.ValidateVersion(version);
-            return version;
+                var version = (PMXVersion)(int)(stream.NextSingle() * 10);
+                PMXValidator.ValidateVersion(version);
+                return version;
+            }
+            finally {
+                StreamHelper.ReleaseBuffer();
+            }
         }
 
         /// <summary>Parse PMX data from specified file</summary>
@@ -53,34 +57,37 @@ namespace MMDTools
         /// <returns>PMX object</returns>
         public static PMXObject Parse(Stream stream)
         {
-            var pmx = new PMXObject();
-            ParseHeader(stream, out var localInfo, pmx);
-            ParseModelInfo(stream, ref localInfo, pmx);
-            ParseVertex(stream, ref localInfo, pmx);
-            ParseSurface(stream, ref localInfo, pmx);
-            ParseTexture(stream, ref localInfo, pmx);
-            ParseMaterial(stream, ref localInfo, pmx);
-            ParseBone(stream, ref localInfo, pmx);
-            ParseMorph(stream, ref localInfo, pmx);
-            ParseDisplayFrame(stream, ref localInfo, pmx);
-            ParseRigidBody(stream, ref localInfo, pmx);
-            ParseJoint(stream, ref localInfo, pmx);
-            ParseSoftBody(stream, ref localInfo, pmx);
-            return pmx;
+            try {
+                var pmx = new PMXObject();
+                ParseHeader(stream, out var localInfo, pmx);
+                ParseModelInfo(stream, ref localInfo, pmx);
+                ParseVertex(stream, ref localInfo, pmx);
+                ParseSurface(stream, ref localInfo, pmx);
+                ParseTexture(stream, ref localInfo, pmx);
+                ParseMaterial(stream, ref localInfo, pmx);
+                ParseBone(stream, ref localInfo, pmx);
+                ParseMorph(stream, ref localInfo, pmx);
+                ParseDisplayFrame(stream, ref localInfo, pmx);
+                ParseRigidBody(stream, ref localInfo, pmx);
+                ParseJoint(stream, ref localInfo, pmx);
+                ParseSoftBody(stream, ref localInfo, pmx);
+                return pmx;
+            }
+            finally {
+                StreamHelper.ReleaseBuffer();
+            }
         }
 
         private static void ParseHeader(Stream stream, out ParserLocalInfo localInfo, PMXObject pmx)
         {
-            Span<byte> magicWord = stackalloc byte[4];
-            stream.NextBytes(magicWord);
+            stream.NextBytes(4, out var magicWord);
             PMXValidator.ValidateMagicWord(magicWord);
 
             var version = (PMXVersion)(int)(stream.NextSingle() * 10);
             PMXValidator.ValidateVersion(version);
 
             var infoLen = stream.NextByte();
-            Span<byte> info = stackalloc byte[infoLen];
-            stream.NextBytes(info);
+            stream.NextBytes(infoLen, out var info);
             PMXValidator.ValidateHeaderInfo(info);
             localInfo = new ParserLocalInfo(version, info);
             pmx.Version = localInfo.Version;
@@ -621,74 +628,85 @@ namespace MMDTools
         }
     }
 
-    internal static class StreamExtension
+    internal static class StreamHelper
     {
+        [ThreadStatic]
+        private static byte[]? _tlsBuffer;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte[] GetTLSBuffer(int minLength)
+        {
+            var tlsBuffer = _tlsBuffer;
+            if(tlsBuffer != null) {
+                if(tlsBuffer.Length >= minLength) {
+                    return tlsBuffer;
+                }
+                else {
+                    ArrayPool<byte>.Shared.Return(tlsBuffer);
+                }
+            }
+            return _tlsBuffer = ArrayPool<byte>.Shared.Rent(minLength);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReleaseBuffer()
+        {
+            if(_tlsBuffer != null) {
+                ArrayPool<byte>.Shared.Return(_tlsBuffer);
+            }
+        }
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static string NextString(this Stream source, int byteSize, Encoding encoding)
         {
-            if(byteSize <= 128) {
-                if(byteSize == 0) { return ""; }
-                var buf = stackalloc byte[byteSize];
-                Read(source, new Span<byte>(buf, byteSize));
-                return encoding.GetString(buf, byteSize);
-            }
-            else {
-                var ptr = Marshal.AllocHGlobal(byteSize);
-                try {
-                    var buf = new Span<byte>((byte*)ptr, byteSize);
-                    Read(source, buf);
-                    return encoding.GetString((byte*)ptr, byteSize);
-                }
-                finally {
-                    Marshal.FreeHGlobal(ptr);
-                }
+            if(byteSize == 0) { return string.Empty; }
+            Read(source, byteSize, out var result);
+            fixed(byte* ptr = result) {
+                return encoding.GetString(ptr, result.Length);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int NextInt32(this Stream source)
         {
-            Span<byte> buf = stackalloc byte[sizeof(int)];
-            Read(source, buf);
-            return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf));
+            Read(source, sizeof(int), out var result);
+            return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(result));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short NextInt16(this Stream source)
         {
-            Span<byte> buf = stackalloc byte[sizeof(short)];
-            Read(source, buf);
-            return Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf));
+            Read(source, sizeof(short), out var result);
+            return Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(result));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort NextUint16(this Stream source)
         {
-            Span<byte> buf = stackalloc byte[sizeof(ushort)];
-            Read(source, buf);
-            return Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(buf));
+            Read(source, sizeof(ushort), out var result);
+            return Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(result));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float NextSingle(this Stream source)
         {
-            Span<byte> buf = stackalloc byte[sizeof(float)];
-            Read(source, buf);
-            return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buf));
+            Read(source, sizeof(float), out var result);
+            return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(result));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte NextByte(this Stream source)
         {
-            Span<byte> buf = stackalloc byte[sizeof(byte)];
-            Read(source, buf);
-            return buf[0];
+            Read(source, sizeof(byte), out var result);
+            return result[0];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NextBytes(this Stream source, Span<byte> buf)
+        public static void NextBytes(this Stream source, int byteSize, out ReadOnlySpan<byte> bytes)
         {
-            Read(source, buf);
+            Read(source, byteSize, out var result);
+            bytes = result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -696,8 +714,7 @@ namespace MMDTools
         {
             // byteSize must be [1 <= byteSize <= 4]
 
-            Span<byte> buf = stackalloc byte[byteSize];
-            Read(source, buf);
+            Read(source, byteSize, out var buf);
             return byteSize switch
             {
                 1 => (int)(sbyte)buf[0],
@@ -707,22 +724,12 @@ namespace MMDTools
             };
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Read(Stream stream, Span<byte> buf)
+        private static void Read(Stream stream, int length, out Span<byte> result)
         {
-#if !NETSTANDARD2_1
-            byte[] arrayBuf = ArrayPool<byte>.Shared.Rent(buf.Length);
-            try {
-                if(stream.Read(arrayBuf, 0, buf.Length) != buf.Length) { throw new EndOfStreamException(); }
-                arrayBuf.AsSpan(0, buf.Length).CopyTo(buf);
-            }
-            finally {
-                ArrayPool<byte>.Shared.Return(arrayBuf);
-            }
-#else
-            if(stream.Read(buf) != buf.Length) { throw new EndOfStreamException(); }
-#endif
+            var buf = GetTLSBuffer(length);
+            if(stream.Read(buf, 0, length) != length) { throw new EndOfStreamException(); }
+            result = buf.AsSpan(0, length);
         }
     }
 }
