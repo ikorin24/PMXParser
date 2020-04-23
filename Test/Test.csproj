@@ -5,6 +5,7 @@
     <TargetFrameworks>netcoreapp3.0;netcoreapp2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon />
     <StartupObject />
   </PropertyGroup>
@@ -18,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PMXParser.UM\PMXParser.UM.csproj" />
     <ProjectReference Include="..\PMXParser\PMXParser.csproj" />
   </ItemGroup>
 

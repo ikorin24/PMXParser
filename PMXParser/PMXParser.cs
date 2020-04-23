@@ -33,7 +33,7 @@ namespace MMDTools
                 PMXValidator.ValidateMagicWord(magicWord);
 
                 var version = (PMXVersion)(int)(stream.NextSingle() * 10);
-                PMXValidator.ValidateVersion(version);
+                PMXValidator.ValidateVersion((int)version);
                 return version;
             }
             finally {
@@ -84,7 +84,7 @@ namespace MMDTools
             PMXValidator.ValidateMagicWord(magicWord);
 
             var version = (PMXVersion)(int)(stream.NextSingle() * 10);
-            PMXValidator.ValidateVersion(version);
+            PMXValidator.ValidateVersion((int)version);
 
             var infoLen = stream.NextByte();
             stream.NextBytes(infoLen, out var info);
@@ -590,146 +590,6 @@ namespace MMDTools
                 MorphIndexSize = info[6];
                 RigidBodyIndexSize = info[7];
             }
-        }
-    }
-
-    internal static class PMXValidator
-    {
-        public static void ValidateMagicWord(ReadOnlySpan<byte> magicWord)
-        {
-            // magic word : "PMX "
-            Assert(magicWord[0] == 0x50 &&
-                   magicWord[1] == 0x4d &&
-                   magicWord[2] == 0x58 &&
-                   magicWord[3] == 0x20,
-                   $"Invalid magic word");
-        }
-
-        public static void ValidateVersion(PMXVersion version)
-        {
-            Assert(version == PMXVersion.V20 || version == PMXVersion.V21, "Invalid or not supported version");
-        }
-
-        public static void ValidateHeaderInfo(ReadOnlySpan<byte> info)
-        {
-            Assert(info[0] == 0 || info[0] == 1, "Invalid encode type");
-            Assert(info[1] >= 0 || info[1] <= 4, "Invalid additional UV count");
-            Assert(info[2] == 1 || info[2] == 2 || info[2] == 4, "Invalid vertex index size");
-            Assert(info[3] == 1 || info[3] == 2 || info[3] == 4, "Invalid texture index size");
-            Assert(info[4] == 1 || info[4] == 2 || info[4] == 4, "Invalid material index size");
-            Assert(info[5] == 1 || info[5] == 2 || info[5] == 4, "Invalid bone index size");
-            Assert(info[6] == 1 || info[6] == 2 || info[6] == 4, "Invalid morph index size");
-            Assert(info[7] == 1 || info[7] == 2 || info[7] == 4, "Invalid rigid body index size");
-        }
-
-        private static void Assert(bool condition, string message)
-        {
-            if(!condition) { throw new FormatException(message); }
-        }
-    }
-
-    internal static class StreamHelper
-    {
-        [ThreadStatic]
-        private static byte[]? _tlsBuffer;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static byte[] GetTLSBuffer(int minLength)
-        {
-            var tlsBuffer = _tlsBuffer;
-            if(tlsBuffer != null) {
-                if(tlsBuffer.Length >= minLength) {
-                    return tlsBuffer;
-                }
-                else {
-                    ArrayPool<byte>.Shared.Return(tlsBuffer);
-                }
-            }
-            return _tlsBuffer = ArrayPool<byte>.Shared.Rent(minLength);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReleaseBuffer()
-        {
-            if(_tlsBuffer != null) {
-                ArrayPool<byte>.Shared.Return(_tlsBuffer);
-            }
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static string NextString(this Stream source, int byteSize, Encoding encoding)
-        {
-            if(byteSize == 0) { return string.Empty; }
-            Read(source, byteSize, out var result);
-            fixed(byte* ptr = result) {
-                return encoding.GetString(ptr, result.Length);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int NextInt32(this Stream source)
-        {
-            Read(source, sizeof(int), out var result);
-            return Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(result));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short NextInt16(this Stream source)
-        {
-            Read(source, sizeof(short), out var result);
-            return Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(result));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ushort NextUint16(this Stream source)
-        {
-            Read(source, sizeof(ushort), out var result);
-            return Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(result));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float NextSingle(this Stream source)
-        {
-            Read(source, sizeof(float), out var result);
-            return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(result));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte NextByte(this Stream source)
-        {
-            Read(source, sizeof(byte), out var result);
-            return result[0];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NextBytes(this Stream source, int byteSize, out ReadOnlySpan<byte> bytes)
-        {
-            Read(source, byteSize, out var result);
-            bytes = result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int NextDataOfSize(this Stream source, byte byteSize)
-        {
-            // byteSize must be [1 <= byteSize <= 4]
-
-            Read(source, byteSize, out var buf);
-            return byteSize switch
-            {
-                1 => (int)(sbyte)buf[0],
-                2 => (int)Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf)),
-                4 => Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf)),
-                _ => throw new InvalidOperationException("Invalid byte size. Byte size must be 1, 2, or 4."),
-            };
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Read(Stream stream, int length, out Span<byte> result)
-        {
-            var buf = GetTLSBuffer(length);
-            if(stream.Read(buf, 0, length) != length) { throw new EndOfStreamException(); }
-            result = buf.AsSpan(0, length);
         }
     }
 }
