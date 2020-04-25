@@ -10,13 +10,7 @@ namespace MMDTools.Unmanaged
     [DebuggerDisplay("{ToString()}")]
     public unsafe readonly struct RawString : IDisposable
     {
-        // 先頭へのポインタは void* や IntPtr 型でフィールドに持ってはいけない。
-        // T が再帰的に参照またはポインタを含む場合、.NET Framework で Span<T> を作ることができない。
-        // (ただし.NET Core では可能。)
-        // Span<RawString> を作成可能にするために、ポインタを ulong で保持する。
-        // このフィールドのポインタは常にアンマネージドヒープメモリを指すため、
-        // Span<RawString> を .NET Framework で作成しても問題は起こらない。
-        private readonly ulong _headPointer;
+        private readonly IntPtr _headPointer;
         public readonly int ByteLength;
         public readonly StringEncoding Encoding;
 
@@ -25,7 +19,7 @@ namespace MMDTools.Unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal RawString(ReadOnlySpan<byte> source, StringEncoding encoding)
         {
-            _headPointer = (ulong)Marshal.AllocHGlobal(source.Length);
+            _headPointer = Marshal.AllocHGlobal(source.Length);
             ByteLength = source.Length;
             Encoding = encoding;
             source.CopyTo(new Span<byte>((void*)_headPointer, source.Length));
@@ -57,8 +51,8 @@ namespace MMDTools.Unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            Marshal.FreeHGlobal((IntPtr)_headPointer);    // Do nothing when pointer is null.
-            Unsafe.AsRef(_headPointer) = 0;               // Clear pointer into null for safety.
+            Marshal.FreeHGlobal(_headPointer);    // Do nothing when pointer is null.
+            Unsafe.AsRef(_headPointer) = IntPtr.Zero;     // Clear pointer into null for safety.
             Unsafe.AsRef(ByteLength) = 0;
         }
     }
