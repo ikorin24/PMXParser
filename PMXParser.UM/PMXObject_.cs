@@ -2,25 +2,37 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MMDTools.Unmanaged
 {
     public unsafe readonly struct PMXObject : IDisposable
     {
-        private readonly PMXObject_* _p;
+        /// <summary>pointer to <see cref="PMXObject_"/></summary>
+        private readonly IntPtr _ptr;
 
-        internal PMXObject_* Entity => _p;
+        internal PMXObject_* Entity => (PMXObject_*)_ptr;
 
-        private unsafe PMXObject(PMXObject_* p) => _p = p;
+        private unsafe PMXObject(PMXObject_* ptr) => _ptr = (IntPtr)ptr;
 
-        internal unsafe static PMXObject New() => new PMXObject(Unmanaged.New<PMXObject_>());
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal unsafe static PMXObject New()
+        {
+            var ptr = (PMXObject_*)Marshal.AllocHGlobal(sizeof(PMXObject_));
+            *ptr = default;             // Initialized memory for safety.
+            return new PMXObject(ptr);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            if(_p != null) {
-                _p->Dispose();
-                Unmanaged.Delete(_p);
+            var p = (PMXObject_*)_ptr;
+            if(p != null) {
+                p->Dispose();
+                Marshal.FreeHGlobal(_ptr);
+                Unsafe.AsRef(_ptr) = IntPtr.Zero;
             }
         }
     }
@@ -71,6 +83,7 @@ namespace MMDTools.Unmanaged
 
         public readonly void Dispose()
         {
+            throw new NotImplementedException("配列とその各要素の持つリソースを再帰的に全て破棄しなければならない");
             Name.Dispose();
             NameEnglish.Dispose();
             Comment.Dispose();
@@ -328,7 +341,6 @@ namespace MMDTools.Unmanaged
         public int IKTarget;
         public int IterCount;
         public float MaxRadianPerIter;
-        public int IKLinkCount;
         public RawArray<IKLink> IKLinks;
     }
 
@@ -413,8 +425,8 @@ namespace MMDTools.Unmanaged
     [DebuggerDisplay("DisplayFrame (Name={Name})")]
     public struct DisplayFrame
     {
-        public RawArray<byte> Name;
-        public RawArray<byte> NameEnglish;
+        public RawString Name;
+        public RawString NameEnglish;
         public DisplayFrameType Type;
         public RawArray<DisplayFrameElement> Elements;
     }
@@ -422,10 +434,10 @@ namespace MMDTools.Unmanaged
     [DebuggerDisplay("RigidBody (Name={Name})")]
     public struct RigidBody
     {
-        public RawArray<byte> Name;
-        public RawArray<byte> NameEnglish;
-        //public int Bone = -1;
-        //public bool HasBone => Bone != -1;            // TODO: 初期値が-1なのはどうしよう
+        public RawString Name;
+        public RawString NameEnglish;
+        public int Bone;
+        public bool HasBone;        // Bone >= 0
         public byte Group;
         public ushort GroupTarget;
         public RigidBodyShape Shape;
@@ -443,8 +455,8 @@ namespace MMDTools.Unmanaged
     [DebuggerDisplay("Joint (Name={Name})")]
     public struct Joint
     {
-        public RawArray<byte> Name;
-        public RawArray<byte> NameEnglish;
+        public RawString Name;
+        public RawString NameEnglish;
         public JointType Type;
         public int RigidBody1;
         public int RigidBody2;
@@ -461,8 +473,8 @@ namespace MMDTools.Unmanaged
     [DebuggerDisplay("SoftBody (Name={Name})")]
     public struct SoftBody
     {
-        public RawArray<byte> Name;
-        public RawArray<byte> NameEnglish;
+        public RawString Name;
+        public RawString NameEnglish;
         public SoftBodyShape Shape;
         public int TargetMaterial;
         public byte Group;
@@ -768,5 +780,17 @@ namespace MMDTools.Unmanaged
         VOneSided = 2,
         FTwoSided = 3,
         FOneSided = 4,
+    }
+
+    public static class FlagsEnumExtension
+    {
+        // This is compatible with Enum.HasFlag method.
+        // Enum.HasFlag method is bad performance because of boxing. About 20 times slower.
+        // (This happens only before dotnet core 2.0. The JIT compiler after dotnet core 2.1 avoid it.)
+
+        public static bool Has(this BoneFlag source, BoneFlag flag)
+        {
+            return (source & flag) == flag;
+        }
     }
 }
