@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace MMDTools.Unmanaged
 {
-    [DebuggerTypeProxy(typeof(RawArrayDebuggerTypeProxy<>))]
-    [DebuggerDisplay("RawArray<{typeof(T).Name}>[{Length}]")]
-    public unsafe readonly struct RawArray<T> : IDisposable where T : unmanaged
+    [DebuggerTypeProxy(typeof(DisposableRawArrayDebuggerTypeProxy<>))]
+    [DebuggerDisplay("DisposableRawArray<{typeof(T).Name}>[{Length}]")]
+    public unsafe readonly struct DisposableRawArray<T> : IDisposable where T : unmanaged, IDisposable
     {
         private readonly IntPtr _ptr;
         public readonly int Length;
@@ -20,7 +20,7 @@ namespace MMDTools.Unmanaged
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal RawArray(int length)
+        internal DisposableRawArray(int length)
         {
             if(length < 0) { throw new ArgumentOutOfRangeException(nameof(length), $"{nameof(length)} is negative value."); }
             if(length == 0) {
@@ -38,6 +38,9 @@ namespace MMDTools.Unmanaged
         public void Dispose()
         {
             if(_ptr != IntPtr.Zero) {
+                foreach(var item in AsSpan()) {
+                    item.Dispose();
+                }
                 UnmanagedMemoryChecker.RegisterReleasedBytes(sizeof(T) * Length);
                 Marshal.FreeHGlobal(_ptr);
                 Unsafe.AsRef(_ptr) = IntPtr.Zero;   // Clear pointer into null for safety.
@@ -47,7 +50,6 @@ namespace MMDTools.Unmanaged
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> AsSpan() => new Span<T>((T*)_ptr, Length);
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> AsSpan(int start)
@@ -65,10 +67,10 @@ namespace MMDTools.Unmanaged
         }
     }
 
-    internal sealed class RawArrayDebuggerTypeProxy<T> where T : unmanaged
+    internal sealed class DisposableRawArrayDebuggerTypeProxy<T> where T : unmanaged, IDisposable
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly RawArray<T> _entity;
+        private readonly DisposableRawArray<T> _entity;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         public T[] Items
@@ -81,6 +83,6 @@ namespace MMDTools.Unmanaged
             }
         }
 
-        public RawArrayDebuggerTypeProxy(RawArray<T> entity) => _entity = entity;
+        public DisposableRawArrayDebuggerTypeProxy(DisposableRawArray<T> entity) => _entity = entity;
     }
 }

@@ -22,7 +22,11 @@ namespace MMDTools.Unmanaged
         internal unsafe static PMXObject New()
         {
             var ptr = (PMXObject_*)Marshal.AllocHGlobal(sizeof(PMXObject_));
-            *ptr = default;             // Initialized memory for safety.
+
+            // Initialized memory for safety.
+            *ptr = default;
+
+            UnmanagedMemoryChecker.RegisterNewAllocatedBytes(sizeof(PMXObject_));
             return new PMXObject(ptr);
         }
 
@@ -38,7 +42,10 @@ namespace MMDTools.Unmanaged
 
             ((PMXObject_*)p)->Dispose();
             Marshal.FreeHGlobal(p);
-        }
+            UnmanagedMemoryChecker.RegisterReleasedBytes(sizeof(PMXObject_));
+
+            UnmanagedMemoryChecker.AssertResourceReleased();
+    }
     }
 
     internal unsafe struct PMXObject_ : IDisposable
@@ -62,38 +69,46 @@ namespace MMDTools.Unmanaged
         public RawArray<Surface> SurfaceList;
 
         /// <summary>Get list of texture file path</summary>
-        public RawArray<RawString> TextureList;
+        public DisposableRawArray<RawString> TextureList;
 
         /// <summary>Get <see cref="Material"/> list</summary>
-        public RawArray<Material> MaterialList;
+        public DisposableRawArray<Material> MaterialList;
 
         /// <summary>Get <see cref="Bone"/> list</summary>
-        public RawArray<Bone> BoneList;
+        public DisposableRawArray<Bone> BoneList;
 
         /// <summary>Get <see cref="Morph"/> list</summary>
-        public RawArray<Morph> MorphList;
+        public DisposableRawArray<Morph> MorphList;
 
         /// <summary>Get <see cref="DisplayFrame"/> list</summary>
-        public RawArray<DisplayFrame> DisplayFrameList;
+        public DisposableRawArray<DisplayFrame> DisplayFrameList;
 
         /// <summary>Get <see cref="RigidBody"/> list</summary>
-        public RawArray<RigidBody> RigidBodyList;
+        public DisposableRawArray<RigidBody> RigidBodyList;
 
         /// <summary>Get <see cref="Joint"/> list</summary>
-        public RawArray<Joint> JointList;
+        public DisposableRawArray<Joint> JointList;
 
         /// <summary>Get <see cref="SoftBody"/> list</summary>
-        public RawArray<SoftBody> SoftBodyList;
+        public DisposableRawArray<SoftBody> SoftBodyList;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
         {
-            //throw new NotImplementedException("配列とその各要素の持つリソースを再帰的に全て破棄しなければならない");
             Name.Dispose();
             NameEnglish.Dispose();
             Comment.Dispose();
             CommentEnglish.Dispose();
             VertexList.Dispose();
             SurfaceList.Dispose();
+            TextureList.Dispose();
+            MaterialList.Dispose();
+            BoneList.Dispose();
+            MorphList.Dispose();
+            DisplayFrameList.Dispose();
+            RigidBodyList.Dispose();
+            JointList.Dispose();
+            SoftBodyList.Dispose();
         }
     }
 
@@ -109,34 +124,17 @@ namespace MMDTools.Unmanaged
         public float X;
         public float Y;
 
-        public Vector2(float x, float y)
-        {
-            X = x;
-            Y = y;
-        }
+        public Vector2(float x, float y) => (X, Y) = (x, y);        
 
-        public override bool Equals(object? obj)
-        {
-            return obj is Vector2 vector ? Equals(vector) : false;
-        }
+        public readonly override bool Equals(object? obj) => obj is Vector2 vector ? Equals(vector) : false;
 
-        public bool Equals(Vector2 other)
-        {
-            return X == other.X &&
-                   Y == other.Y;
-        }
+        public readonly bool Equals(Vector2 other) => (X == other.X) && (Y == other.Y);
 
-        public override int GetHashCode() => HashCode.Combine(X, Y);
+        public readonly override int GetHashCode() => HashCode.Combine(X, Y);
 
-        public static bool operator ==(Vector2 left, Vector2 right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Vector2 left, Vector2 right) => left.Equals(right);
 
-        public static bool operator !=(Vector2 left, Vector2 right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(Vector2 left, Vector2 right) => !(left == right);
     }
 
     [DebuggerDisplay("({X}, {Y}, {Z})")]
@@ -146,36 +144,17 @@ namespace MMDTools.Unmanaged
         public float Y;
         public float Z;
 
-        public Vector3(float x, float y, float z)
-        {
-            X = x;
-            Y = y;
-            Z = z;
-        }
+        public Vector3(float x, float y, float z) => (X, Y, Z) = (x, y, z);
 
-        public override bool Equals(object? obj)
-        {
-            return obj is Vector3 vector ? Equals(vector) : false;
-        }
+        public readonly override bool Equals(object? obj) => obj is Vector3 vector ? Equals(vector) : false;
 
-        public bool Equals(Vector3 other)
-        {
-            return X == other.X &&
-                   Y == other.Y &&
-                   Z == other.Z;
-        }
+        public readonly bool Equals(Vector3 other) => (X == other.X) && (Y == other.Y) && (Z == other.Z);
 
-        public override int GetHashCode() => HashCode.Combine(X, Y, Z);
+        public readonly override int GetHashCode() => HashCode.Combine(X, Y, Z);
 
-        public static bool operator ==(Vector3 left, Vector3 right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Vector3 left, Vector3 right) => left.Equals(right);
 
-        public static bool operator !=(Vector3 left, Vector3 right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(Vector3 left, Vector3 right) => !(left == right);
     }
 
     [DebuggerDisplay("({X}, {Y}, {Z}, {W})")]
@@ -186,38 +165,17 @@ namespace MMDTools.Unmanaged
         public float Z;
         public float W;
 
-        public Vector4(float x, float y, float z, float w)
-        {
-            X = x;
-            Y = y;
-            Z = z;
-            W = w;
-        }
+        public Vector4(float x, float y, float z, float w) => (X, Y, Z, W) = (x, y, z, w);
 
-        public override bool Equals(object? obj)
-        {
-            return obj is Vector4 vector ? Equals(vector) : false;
-        }
+        public readonly override bool Equals(object? obj) => obj is Vector4 vector ? Equals(vector) : false;
 
-        public bool Equals(Vector4 other)
-        {
-            return X == other.X &&
-                   Y == other.Y &&
-                   Z == other.Z &&
-                   W == other.W;
-        }
+        public readonly bool Equals(Vector4 other) => (X == other.X) && (Y == other.Y) && (Z == other.Z) && (W == other.W);
 
-        public override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
+        public readonly override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
 
-        public static bool operator ==(Vector4 left, Vector4 right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Vector4 left, Vector4 right) => left.Equals(right);
 
-        public static bool operator !=(Vector4 left, Vector4 right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(Vector4 left, Vector4 right) => !(left == right);
     }
 
     [DebuggerDisplay("(R={R}, G={G}, B={B}, A={A})")]
@@ -228,50 +186,23 @@ namespace MMDTools.Unmanaged
         public float B;
         public float A;
 
-        public Color(float r, float g, float b)
-        {
-            R = r;
-            G = g;
-            B = b;
-            A = 1f;
-        }
+        public Color(float r, float g, float b) : this(r, g, b, 1f) { }
 
-        public Color(float r, float g, float b, float a)
-        {
-            R = r;
-            G = g;
-            B = b;
-            A = a;
-        }
+        public Color(float r, float g, float b, float a) => (R, G, B, A) = (r, g, b, a);
 
-        public override bool Equals(object? obj)
-        {
-            return obj is Color color ? Equals(color) : false;
-        }
+        public readonly override bool Equals(object? obj) => obj is Color color ? Equals(color) : false;
 
-        public bool Equals(Color other)
-        {
-            return R == other.R &&
-                   G == other.G &&
-                   B == other.B &&
-                   A == other.A;
-        }
+        public readonly bool Equals(Color other) => (R == other.R) && (G == other.G) && (B == other.B) && (A == other.A);
 
-        public override int GetHashCode() => HashCode.Combine(R, G, B, A);
+        public readonly override int GetHashCode() => HashCode.Combine(R, G, B, A);
 
-        public static bool operator ==(Color left, Color right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Color left, Color right) => left.Equals(right);
 
-        public static bool operator !=(Color left, Color right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(Color left, Color right) => !(left == right);
     }
 
     [DebuggerDisplay("Pos=({Position.X}, {Position.Y}, {Position.Z})")]
-    public struct Vertex : IDisposable
+    public struct Vertex
     {
         public Vector3 Position;
         public Vector3 Normal;
@@ -294,17 +225,14 @@ namespace MMDTools.Unmanaged
         public Vector3 R0;
         public Vector3 R1;
         public float EdgeRatio;
-
-        public readonly void Dispose() { }   // nop
     }
 
     [DebuggerDisplay("({V1}, {V2}, {V3})")]
-    public struct Surface : IDisposable
+    public struct Surface
     {
         public int V1;
         public int V2;
         public int V3;
-        public readonly void Dispose() { }   // nop
     }
 
     [DebuggerDisplay("Material (Name={Name})")]
@@ -327,6 +255,7 @@ namespace MMDTools.Unmanaged
         public RawString Memo;
         public int VertexCount;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
         {
             Name.Dispose();
@@ -357,6 +286,7 @@ namespace MMDTools.Unmanaged
         public float MaxRadianPerIter;
         public RawArray<IKLink> IKLinks;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
         {
             Name.Dispose();
@@ -380,6 +310,7 @@ namespace MMDTools.Unmanaged
         public RawArray<FlipMorphElement> FlipMorphElements;
         public RawArray<ImpulseMorphElement> ImpulseMorphElements;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
         {
             Name.Dispose();
@@ -395,44 +326,36 @@ namespace MMDTools.Unmanaged
     }
 
     [DebuggerDisplay("GroupMorphElement (TargetMorph={TargetMorph})")]
-    public struct GroupMorphElement : IDisposable
+    public struct GroupMorphElement
     {
         public int TargetMorph;
         public float MorphRatio;
-
-        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("VertexMorphElement (TargetVertex={TargetVertex})")]
-    public struct VertexMorphElement : IDisposable
+    public struct VertexMorphElement
     {
         public int TargetVertex;
         public Vector3 PosOffset;
-
-        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("BoneMorphElement (TargetBone={TargetBone})")]
-    public struct BoneMorphElement : IDisposable
+    public struct BoneMorphElement
     {
         public int TargetBone;
         public Vector3 Translate;
         public Vector4 Quaternion;
-
-        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("UVMorphElement (TargetVertex={TargetVertex})")]
-    public struct UVMorphElement : IDisposable
+    public struct UVMorphElement
     {
         public int TargetVertex;
         public Vector4 UVOffset;
-
-        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("MaterialMorphElement (Material={Material})")]
-    public struct MaterialMorphElement : IDisposable
+    public struct MaterialMorphElement
     {
         public int Material;
         public bool IsAllMaterialTarget => Material == -1;
@@ -446,28 +369,22 @@ namespace MMDTools.Unmanaged
         public Color TextureCoef;
         public Color SphereTextureCoef;
         public Color ToonTextureCoef;
-
-        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("FlipMorphElement (TargetMorph={TargetMorph})")]
-    public struct FlipMorphElement : IDisposable
+    public struct FlipMorphElement
     {
         public int TargetMorph;
         public float MorphRatio;
-
-        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("ImpulseMorphElement (TargetRigidBody={TargetRigidBody})")]
-    public struct ImpulseMorphElement : IDisposable
+    public struct ImpulseMorphElement
     {
         public int TargetRigidBody;
         public bool IsLocal;
         public Vector3 Velocity;
         public Vector3 RotationTorque;
-
-        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("DisplayFrame (Name={Name})")]
@@ -478,8 +395,11 @@ namespace MMDTools.Unmanaged
         public DisplayFrameType Type;
         public RawArray<DisplayFrameElement> Elements;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
         {
+            Name.Dispose();
+            NameEnglish.Dispose();
             Elements.Dispose();
         }
     }
@@ -504,6 +424,7 @@ namespace MMDTools.Unmanaged
         public float Friction;
         public RigidBodyPhysicsType PhysicsType;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
         {
             Name.Dispose();
@@ -528,6 +449,7 @@ namespace MMDTools.Unmanaged
         public Vector3 TranslationSpring;
         public Vector3 RotationSpring;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
         {
             Name.Dispose();
@@ -536,7 +458,7 @@ namespace MMDTools.Unmanaged
     }
 
     [DebuggerDisplay("SoftBody (Name={Name})")]
-    public struct SoftBody
+    public struct SoftBody : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -556,6 +478,14 @@ namespace MMDTools.Unmanaged
         public SoftBodyMaterial Material;
         public RawArray<AnchorRigidBody> AnchorRigidBodies;
         public RawArray<int> PinnedVertex;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Dispose()
+        {
+            Name.Dispose();
+            NameEnglish.Dispose();
+            AnchorRigidBodies.Dispose();
+        }
     }
 
     public struct SoftBodyConfig
@@ -601,99 +531,27 @@ namespace MMDTools.Unmanaged
 
 
     [DebuggerDisplay("IKLink (Bone={Bone})")]
-    public struct IKLink : IEquatable<IKLink>
+    public struct IKLink
     {
-        public int Bone { get; internal set; }
-        public bool IsEnableAngleLimited { get; internal set; }
-        public Vector3 MinLimit { get; internal set; }
-        public Vector3 MaxLimit { get; internal set; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is IKLink link && Equals(link);
-        }
-
-        public bool Equals(IKLink other)
-        {
-            return Bone == other.Bone &&
-                   IsEnableAngleLimited == other.IsEnableAngleLimited &&
-                   MinLimit.Equals(other.MinLimit) &&
-                   MaxLimit.Equals(other.MaxLimit);
-        }
-
-        public override int GetHashCode() => HashCode.Combine(Bone, IsEnableAngleLimited, MinLimit, MaxLimit);
-
-        public static bool operator ==(IKLink left, IKLink right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(IKLink left, IKLink right)
-        {
-            return !(left == right);
-        }
+        public int Bone;
+        public bool IsEnableAngleLimited;
+        public Vector3 MinLimit;
+        public Vector3 MaxLimit;
     }
 
     [DebuggerDisplay("DisplayFrameElement (TargetType={TargetType}, TargetIndex={TargetIndex})")]
-    public struct DisplayFrameElement : IEquatable<DisplayFrameElement>
+    public struct DisplayFrameElement
     {
-        public DisplayFrameElementTarget TargetType { get; internal set; }
-        public int TargetIndex { get; internal set; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is DisplayFrameElement element && Equals(element);
-        }
-
-        public bool Equals(DisplayFrameElement other)
-        {
-            return TargetType == other.TargetType &&
-                   TargetIndex == other.TargetIndex;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(TargetType, TargetIndex);
-
-        public static bool operator ==(DisplayFrameElement left, DisplayFrameElement right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(DisplayFrameElement left, DisplayFrameElement right)
-        {
-            return !(left == right);
-        }
+        public DisplayFrameElementTarget TargetType;
+        public int TargetIndex;
     }
 
     [DebuggerDisplay("AnchorRigidBody (RigidBody={RigidBody}, Vertex={Vertex}, IsNearMode={IsNearMode})")]
-    public struct AnchorRigidBody : IEquatable<AnchorRigidBody>
+    public struct AnchorRigidBody
     {
-        public int RigidBody { get; internal set; }
-        public int Vertex { get; internal set; }
-        public bool IsNearMode { get; internal set; }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is AnchorRigidBody body && Equals(body);
-        }
-
-        public bool Equals(AnchorRigidBody other)
-        {
-            return RigidBody == other.RigidBody &&
-                   Vertex == other.Vertex &&
-                   IsNearMode == other.IsNearMode;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(RigidBody, Vertex, IsNearMode);
-
-        public static bool operator ==(AnchorRigidBody left, AnchorRigidBody right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(AnchorRigidBody left, AnchorRigidBody right)
-        {
-            return !(left == right);
-        }
+        public int RigidBody;
+        public int Vertex;
+        public bool IsNearMode;
     }
 
     public enum PMXVersion

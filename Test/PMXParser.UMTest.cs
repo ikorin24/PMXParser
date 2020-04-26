@@ -33,8 +33,6 @@ namespace Test
 #endif
         public unsafe void PMXParseVer20(string fileName, PMXVersion version)
         {
-            //Assert.Equal(version, PMXParser.GetVersion(fileName));
-
             using(var stream = File.OpenRead(fileName))
             using(var pmx = PMXParser.Parse(stream)) {
                 Assert.Equal(stream.Length, stream.Position);

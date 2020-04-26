@@ -19,16 +19,17 @@ namespace MMDTools.Unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal RawString(ReadOnlySpan<byte> source, StringEncoding encoding)
         {
+            if(source.Length == 0) {
+                _headPointer = default;
+                ByteLength = default;
+                Encoding = encoding;
+                return;
+            }
             _headPointer = Marshal.AllocHGlobal(source.Length);
             ByteLength = source.Length;
             Encoding = encoding;
             source.CopyTo(new Span<byte>((void*)_headPointer, source.Length));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly string ToString(Encoding encoding)
-        {
-            return encoding?.GetString((byte*)_headPointer, ByteLength) ?? throw new ArgumentNullException(nameof(encoding));
+            UnmanagedMemoryChecker.RegisterNewAllocatedBytes(ByteLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,8 +52,11 @@ namespace MMDTools.Unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            Marshal.FreeHGlobal(_headPointer);    // Do nothing when pointer is null.
-            Unsafe.AsRef(_headPointer) = IntPtr.Zero;     // Clear pointer into null for safety.
+            if(_headPointer != IntPtr.Zero) {
+                UnmanagedMemoryChecker.RegisterReleasedBytes(ByteLength);
+                Marshal.FreeHGlobal(_headPointer);
+                Unsafe.AsRef(_headPointer) = IntPtr.Zero;     // Clear pointer into null for safety.
+            }
             Unsafe.AsRef(ByteLength) = 0;
         }
     }
