@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace MMDTools.Unmanaged
 {
@@ -28,12 +29,15 @@ namespace MMDTools.Unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            var p = (PMXObject_*)_ptr;
-            if(p != null) {
-                p->Dispose();
-                Marshal.FreeHGlobal(_ptr);
-                Unsafe.AsRef(_ptr) = IntPtr.Zero;
-            }
+            // easy check
+            if(_ptr == IntPtr.Zero) { return; }
+
+            // thread-safe check
+            var p = Interlocked.Exchange(ref Unsafe.AsRef(_ptr), IntPtr.Zero);
+            if(p == IntPtr.Zero) { return; }
+
+            ((PMXObject_*)p)->Dispose();
+            Marshal.FreeHGlobal(p);
         }
     }
 
@@ -83,7 +87,7 @@ namespace MMDTools.Unmanaged
 
         public readonly void Dispose()
         {
-            throw new NotImplementedException("配列とその各要素の持つリソースを再帰的に全て破棄しなければならない");
+            //throw new NotImplementedException("配列とその各要素の持つリソースを再帰的に全て破棄しなければならない");
             Name.Dispose();
             NameEnglish.Dispose();
             Comment.Dispose();
@@ -267,7 +271,7 @@ namespace MMDTools.Unmanaged
     }
 
     [DebuggerDisplay("Pos=({Position.X}, {Position.Y}, {Position.Z})")]
-    public struct Vertex
+    public struct Vertex : IDisposable
     {
         public Vector3 Position;
         public Vector3 Normal;
@@ -290,18 +294,21 @@ namespace MMDTools.Unmanaged
         public Vector3 R0;
         public Vector3 R1;
         public float EdgeRatio;
+
+        public readonly void Dispose() { }   // nop
     }
 
     [DebuggerDisplay("({V1}, {V2}, {V3})")]
-    public struct Surface
+    public struct Surface : IDisposable
     {
         public int V1;
         public int V2;
         public int V3;
+        public readonly void Dispose() { }   // nop
     }
 
     [DebuggerDisplay("Material (Name={Name})")]
-    public struct Material
+    public struct Material : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -319,10 +326,17 @@ namespace MMDTools.Unmanaged
         public int ToonTexture;
         public RawString Memo;
         public int VertexCount;
+
+        public readonly void Dispose()
+        {
+            Name.Dispose();
+            NameEnglish.Dispose();
+            Memo.Dispose();
+        }
     }
 
     [DebuggerDisplay("Bone (Name={Name})")]
-    public struct Bone
+    public struct Bone : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -342,10 +356,17 @@ namespace MMDTools.Unmanaged
         public int IterCount;
         public float MaxRadianPerIter;
         public RawArray<IKLink> IKLinks;
+
+        public readonly void Dispose()
+        {
+            Name.Dispose();
+            NameEnglish.Dispose();
+            IKLinks.Dispose();
+        }
     }
 
     [DebuggerDisplay("Morph (Name={Name})")]
-    public struct Morph
+    public struct Morph : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -358,39 +379,60 @@ namespace MMDTools.Unmanaged
         public RawArray<MaterialMorphElement> MaterialMorphElements;
         public RawArray<FlipMorphElement> FlipMorphElements;
         public RawArray<ImpulseMorphElement> ImpulseMorphElements;
+
+        public readonly void Dispose()
+        {
+            Name.Dispose();
+            NameEnglish.Dispose();
+            GroupMorphElements.Dispose();
+            VertexMorphElements.Dispose();
+            BoneMorphElements.Dispose();
+            UVMorphElements.Dispose();
+            MaterialMorphElements.Dispose();
+            FlipMorphElements.Dispose();
+            ImpulseMorphElements.Dispose();
+        }
     }
 
     [DebuggerDisplay("GroupMorphElement (TargetMorph={TargetMorph})")]
-    public struct GroupMorphElement
+    public struct GroupMorphElement : IDisposable
     {
         public int TargetMorph;
         public float MorphRatio;
+
+        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("VertexMorphElement (TargetVertex={TargetVertex})")]
-    public struct VertexMorphElement
+    public struct VertexMorphElement : IDisposable
     {
         public int TargetVertex;
         public Vector3 PosOffset;
+
+        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("BoneMorphElement (TargetBone={TargetBone})")]
-    public struct BoneMorphElement
+    public struct BoneMorphElement : IDisposable
     {
         public int TargetBone;
         public Vector3 Translate;
         public Vector4 Quaternion;
+
+        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("UVMorphElement (TargetVertex={TargetVertex})")]
-    public struct UVMorphElement
+    public struct UVMorphElement : IDisposable
     {
         public int TargetVertex;
         public Vector4 UVOffset;
+
+        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("MaterialMorphElement (Material={Material})")]
-    public struct MaterialMorphElement
+    public struct MaterialMorphElement : IDisposable
     {
         public int Material;
         public bool IsAllMaterialTarget => Material == -1;
@@ -404,35 +446,46 @@ namespace MMDTools.Unmanaged
         public Color TextureCoef;
         public Color SphereTextureCoef;
         public Color ToonTextureCoef;
+
+        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("FlipMorphElement (TargetMorph={TargetMorph})")]
-    public struct FlipMorphElement
+    public struct FlipMorphElement : IDisposable
     {
         public int TargetMorph;
         public float MorphRatio;
+
+        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("ImpulseMorphElement (TargetRigidBody={TargetRigidBody})")]
-    public struct ImpulseMorphElement
+    public struct ImpulseMorphElement : IDisposable
     {
         public int TargetRigidBody;
         public bool IsLocal;
         public Vector3 Velocity;
         public Vector3 RotationTorque;
+
+        public readonly void Dispose() { }  // nop
     }
 
     [DebuggerDisplay("DisplayFrame (Name={Name})")]
-    public struct DisplayFrame
+    public struct DisplayFrame : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
         public DisplayFrameType Type;
         public RawArray<DisplayFrameElement> Elements;
+
+        public readonly void Dispose()
+        {
+            Elements.Dispose();
+        }
     }
 
     [DebuggerDisplay("RigidBody (Name={Name})")]
-    public struct RigidBody
+    public struct RigidBody : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -450,10 +503,16 @@ namespace MMDTools.Unmanaged
         public float Recoil;
         public float Friction;
         public RigidBodyPhysicsType PhysicsType;
+
+        public readonly void Dispose()
+        {
+            Name.Dispose();
+            NameEnglish.Dispose();
+        }
     }
 
     [DebuggerDisplay("Joint (Name={Name})")]
-    public struct Joint
+    public struct Joint : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -468,6 +527,12 @@ namespace MMDTools.Unmanaged
         public Vector3 RotationRadianMaxLimit;
         public Vector3 TranslationSpring;
         public Vector3 RotationSpring;
+
+        public readonly void Dispose()
+        {
+            Name.Dispose();
+            NameEnglish.Dispose();
+        }
     }
 
     [DebuggerDisplay("SoftBody (Name={Name})")]
