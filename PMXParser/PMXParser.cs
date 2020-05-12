@@ -354,7 +354,7 @@ namespace MMDTools
                         morph.MaterialMorphElements = materialMorphElements;
                         for(int j = 0; j < materialMorphElements.Length; j++) {
                             materialMorphElements[j] = new MaterialMorphElement();
-                            materialMorphElements[j].Material = stream.NextDataOfSize(localInfo.MaterialIndexSize);
+                            materialMorphElements[j].Material = stream.NextSignedDataOfSize(localInfo.MaterialIndexSize);
                             materialMorphElements[j].CalcMode = (MaterialMorphCalcMode)stream.NextByte();
                             materialMorphElements[j].Diffuse = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                             materialMorphElements[j].Specular = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
@@ -435,7 +435,7 @@ namespace MMDTools
                 rigidBodyArray[i] = rigidBody;
                 rigidBody.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 rigidBody.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                rigidBody.Bone = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                rigidBody.Bone = stream.NextSignedDataOfSize(localInfo.BoneIndexSize);
                 rigidBody.Group = stream.NextByte();
                 rigidBody.GroupTarget = stream.NextUint16();
                 rigidBody.Shape = (RigidBodyShape)stream.NextByte();
@@ -711,6 +711,21 @@ namespace MMDTools
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int NextDataOfSize(this Stream source, byte byteSize)
+        {
+            // byteSize must be [1 <= byteSize <= 4]
+
+            Read(source, byteSize, out var buf);
+            return byteSize switch
+            {
+                1 => (int)(byte)buf[0],
+                2 => (int)Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(buf)),
+                4 => (int)Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(buf)),
+                _ => throw new InvalidOperationException("Invalid byte size. Byte size must be 1, 2, or 4."),
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int NextSignedDataOfSize(this Stream source, byte byteSize)
         {
             // byteSize must be [1 <= byteSize <= 4]
 
