@@ -97,6 +97,21 @@ namespace MMDTools
             Read(source, byteSize, out var buf);
             return byteSize switch
             {
+                1 => (int)(byte)buf[0],
+                2 => (int)Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(buf)),
+                4 => (int)Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(buf)),
+                _ => throw new InvalidOperationException("Invalid byte size. Byte size must be 1, 2, or 4."),
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int NextSignedDataOfSize(this Stream source, byte byteSize)
+        {
+            // byteSize must be [1 <= byteSize <= 4]
+
+            Read(source, byteSize, out var buf);
+            return byteSize switch
+            {
                 1 => (int)(sbyte)buf[0],
                 2 => (int)Unsafe.ReadUnaligned<short>(ref MemoryMarshal.GetReference(buf)),
                 4 => Unsafe.ReadUnaligned<int>(ref MemoryMarshal.GetReference(buf)),
