@@ -354,7 +354,7 @@ namespace MMDTools
                         morph.MaterialMorphElements = materialMorphElements;
                         for(int j = 0; j < materialMorphElements.Length; j++) {
                             materialMorphElements[j] = new MaterialMorphElement();
-                            materialMorphElements[j].Material = stream.NextDataOfSize(localInfo.MaterialIndexSize);
+                            materialMorphElements[j].Material = stream.NextSignedDataOfSize(localInfo.MaterialIndexSize);
                             materialMorphElements[j].CalcMode = (MaterialMorphCalcMode)stream.NextByte();
                             materialMorphElements[j].Diffuse = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
                             materialMorphElements[j].Specular = new Color(stream.NextSingle(), stream.NextSingle(), stream.NextSingle());
@@ -435,7 +435,7 @@ namespace MMDTools
                 rigidBodyArray[i] = rigidBody;
                 rigidBody.Name = stream.NextString(stream.NextInt32(), localInfo.Encoding);
                 rigidBody.NameEnglish = stream.NextString(stream.NextInt32(), localInfo.Encoding);
-                rigidBody.Bone = stream.NextDataOfSize(localInfo.BoneIndexSize);
+                rigidBody.Bone = stream.NextSignedDataOfSize(localInfo.BoneIndexSize);
                 rigidBody.Group = stream.NextByte();
                 rigidBody.GroupTarget = stream.NextUint16();
                 rigidBody.Shape = (RigidBodyShape)stream.NextByte();
