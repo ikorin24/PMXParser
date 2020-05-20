@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace MMDTools.Unmanaged
 {
@@ -178,7 +179,7 @@ namespace MMDTools.Unmanaged
     }
 
     [DebuggerDisplay("Pos=({Position.X}, {Position.Y}, {Position.Z})")]
-    public struct Vertex
+    public struct Vertex : IEquatable<Vertex>
     {
         public Vector3 Position;
         public Vector3 Normal;
@@ -201,18 +202,83 @@ namespace MMDTools.Unmanaged
         public Vector3 R0;
         public Vector3 R1;
         public float EdgeRatio;
+
+        public override bool Equals(object? obj) => obj is Vertex vertex && Equals(vertex);
+
+        public bool Equals(Vertex other)
+        {
+            return Position.Equals(other.Position) &&
+                   Normal.Equals(other.Normal) &&
+                   UV.Equals(other.UV) &&
+                   AdditionalUVCount == other.AdditionalUVCount &&
+                   AdditionalUV1.Equals(other.AdditionalUV1) &&
+                   AdditionalUV2.Equals(other.AdditionalUV2) &&
+                   AdditionalUV3.Equals(other.AdditionalUV3) &&
+                   AdditionalUV4.Equals(other.AdditionalUV4) &&
+                   WeightTransformType == other.WeightTransformType &&
+                   BoneIndex1 == other.BoneIndex1 &&
+                   BoneIndex2 == other.BoneIndex2 &&
+                   BoneIndex3 == other.BoneIndex3 &&
+                   BoneIndex4 == other.BoneIndex4 &&
+                   Weight1 == other.Weight1 &&
+                   Weight2 == other.Weight2 &&
+                   Weight3 == other.Weight3 &&
+                   Weight4 == other.Weight4 &&
+                   C.Equals(other.C) &&
+                   R0.Equals(other.R0) &&
+                   R1.Equals(other.R1) &&
+                   EdgeRatio == other.EdgeRatio;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Position);
+            hash.Add(Normal);
+            hash.Add(UV);
+            hash.Add(AdditionalUVCount);
+            hash.Add(AdditionalUV1);
+            hash.Add(AdditionalUV2);
+            hash.Add(AdditionalUV3);
+            hash.Add(AdditionalUV4);
+            hash.Add(WeightTransformType);
+            hash.Add(BoneIndex1);
+            hash.Add(BoneIndex2);
+            hash.Add(BoneIndex3);
+            hash.Add(BoneIndex4);
+            hash.Add(Weight1);
+            hash.Add(Weight2);
+            hash.Add(Weight3);
+            hash.Add(Weight4);
+            hash.Add(C);
+            hash.Add(R0);
+            hash.Add(R1);
+            hash.Add(EdgeRatio);
+            return hash.ToHashCode();
+        }
     }
 
     [DebuggerDisplay("({V1}, {V2}, {V3})")]
-    public struct Surface
+    public struct Surface : IEquatable<Surface>
     {
         public int V1;
         public int V2;
         public int V3;
+
+        public override bool Equals(object? obj) => obj is Surface surface && Equals(surface);
+
+        public bool Equals(Surface other)
+        {
+            return V1 == other.V1 &&
+                   V2 == other.V2 &&
+                   V3 == other.V3;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(V1, V2, V3);
     }
 
     [DebuggerDisplay("Material (Name={Name})")]
-    public readonly struct Material
+    public readonly struct Material : IEquatable<Material>
     {
         public readonly ReadOnlyRawString Name;
         public readonly ReadOnlyRawString NameEnglish;
@@ -230,10 +296,54 @@ namespace MMDTools.Unmanaged
         public readonly int ToonTexture;
         public readonly ReadOnlyRawString Memo;
         public readonly int VertexCount;
+
+        public override bool Equals(object? obj) => obj is Material material && Equals(material);
+
+        public bool Equals(Material other)
+        {
+            return Name.Equals(other.Name) &&
+                   NameEnglish.Equals(other.NameEnglish) &&
+                   Diffuse.Equals(other.Diffuse) &&
+                   Specular.Equals(other.Specular) &&
+                   Shininess == other.Shininess &&
+                   Ambient.Equals(other.Ambient) &&
+                   DrawFlag == other.DrawFlag &&
+                   EdgeColor.Equals(other.EdgeColor) &&
+                   EdgeSize == other.EdgeSize &&
+                   Texture == other.Texture &&
+                   SphereTextre == other.SphereTextre &&
+                   SphereTextureMode == other.SphereTextureMode &&
+                   SharedToonMode == other.SharedToonMode &&
+                   ToonTexture == other.ToonTexture &&
+                   Memo.Equals(other.Memo) &&
+                   VertexCount == other.VertexCount;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Name);
+            hash.Add(NameEnglish);
+            hash.Add(Diffuse);
+            hash.Add(Specular);
+            hash.Add(Shininess);
+            hash.Add(Ambient);
+            hash.Add(DrawFlag);
+            hash.Add(EdgeColor);
+            hash.Add(EdgeSize);
+            hash.Add(Texture);
+            hash.Add(SphereTextre);
+            hash.Add(SphereTextureMode);
+            hash.Add(SharedToonMode);
+            hash.Add(ToonTexture);
+            hash.Add(Memo);
+            hash.Add(VertexCount);
+            return hash.ToHashCode();
+        }
     }
 
     [DebuggerDisplay("Bone (Name={Name})")]
-    public readonly struct Bone
+    public readonly struct Bone : IEquatable<Bone>
     {
         public readonly ReadOnlyRawString Name;
         public readonly ReadOnlyRawString NameEnglish;
@@ -253,10 +363,58 @@ namespace MMDTools.Unmanaged
         public readonly int IterCount;
         public readonly float MaxRadianPerIter;
         public readonly ReadOnlyRawArray<IKLink> IKLinks;
+
+        public override bool Equals(object? obj) => obj is Bone bone && Equals(bone);
+
+        public bool Equals(Bone other)
+        {
+            return Name.Equals(other.Name) &&
+                   NameEnglish.Equals(other.NameEnglish) &&
+                   Position.Equals(other.Position) &&
+                   ParentBone == other.ParentBone &&
+                   TransformDepth == other.TransformDepth &&
+                   BoneFlag == other.BoneFlag &&
+                   ConnectedBone == other.ConnectedBone &&
+                   PositionOffset.Equals(other.PositionOffset) &&
+                   AttatchParent == other.AttatchParent &&
+                   AttatchRatio == other.AttatchRatio &&
+                   AxisVec.Equals(other.AxisVec) &&
+                   XAxisVec.Equals(other.XAxisVec) &&
+                   ZAxisVec.Equals(other.ZAxisVec) &&
+                   Key == other.Key &&
+                   IKTarget == other.IKTarget &&
+                   IterCount == other.IterCount &&
+                   MaxRadianPerIter == other.MaxRadianPerIter &&
+                   IKLinks.Equals(other.IKLinks);
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Name);
+            hash.Add(NameEnglish);
+            hash.Add(Position);
+            hash.Add(ParentBone);
+            hash.Add(TransformDepth);
+            hash.Add(BoneFlag);
+            hash.Add(ConnectedBone);
+            hash.Add(PositionOffset);
+            hash.Add(AttatchParent);
+            hash.Add(AttatchRatio);
+            hash.Add(AxisVec);
+            hash.Add(XAxisVec);
+            hash.Add(ZAxisVec);
+            hash.Add(Key);
+            hash.Add(IKTarget);
+            hash.Add(IterCount);
+            hash.Add(MaxRadianPerIter);
+            hash.Add(IKLinks);
+            return hash.ToHashCode();
+        }
     }
 
     [DebuggerDisplay("Morph (Name={Name})")]
-    public readonly struct Morph
+    public readonly struct Morph : IEquatable<Morph>
     {
         public readonly ReadOnlyRawString Name;
         public readonly ReadOnlyRawString NameEnglish;
@@ -269,39 +427,114 @@ namespace MMDTools.Unmanaged
         public readonly ReadOnlyRawArray<MaterialMorphElement> MaterialMorphElements;
         public readonly ReadOnlyRawArray<FlipMorphElement> FlipMorphElements;
         public readonly ReadOnlyRawArray<ImpulseMorphElement> ImpulseMorphElements;
+
+        public override bool Equals(object? obj) => obj is Morph morph && Equals(morph);
+
+        public bool Equals(Morph other)
+        {
+            return Name.Equals(other.Name) &&
+                   NameEnglish.Equals(other.NameEnglish) &&
+                   MorphTarget == other.MorphTarget &&
+                   MorphType == other.MorphType &&
+                   GroupMorphElements.Equals(other.GroupMorphElements) &&
+                   VertexMorphElements.Equals(other.VertexMorphElements) &&
+                   BoneMorphElements.Equals(other.BoneMorphElements) &&
+                   UVMorphElements.Equals(other.UVMorphElements) &&
+                   MaterialMorphElements.Equals(other.MaterialMorphElements) &&
+                   FlipMorphElements.Equals(other.FlipMorphElements) &&
+                   ImpulseMorphElements.Equals(other.ImpulseMorphElements);
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Name);
+            hash.Add(NameEnglish);
+            hash.Add(MorphTarget);
+            hash.Add(MorphType);
+            hash.Add(GroupMorphElements);
+            hash.Add(VertexMorphElements);
+            hash.Add(BoneMorphElements);
+            hash.Add(UVMorphElements);
+            hash.Add(MaterialMorphElements);
+            hash.Add(FlipMorphElements);
+            hash.Add(ImpulseMorphElements);
+            return hash.ToHashCode();
+        }
     }
 
     [DebuggerDisplay("GroupMorphElement (TargetMorph={TargetMorph})")]
-    public struct GroupMorphElement
+    public struct GroupMorphElement : IEquatable<GroupMorphElement>
     {
         public int TargetMorph;
         public float MorphRatio;
+
+        public override bool Equals(object? obj) => obj is GroupMorphElement element && Equals(element);
+
+        public bool Equals(GroupMorphElement other)
+        {
+            return TargetMorph == other.TargetMorph &&
+                   MorphRatio == other.MorphRatio;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(TargetMorph, MorphRatio);
     }
 
     [DebuggerDisplay("VertexMorphElement (TargetVertex={TargetVertex})")]
-    public struct VertexMorphElement
+    public struct VertexMorphElement : IEquatable<VertexMorphElement>
     {
         public int TargetVertex;
         public Vector3 PosOffset;
+
+        public override bool Equals(object? obj) => obj is VertexMorphElement element && Equals(element);
+
+        public bool Equals(VertexMorphElement other)
+        {
+            return TargetVertex == other.TargetVertex &&
+                   PosOffset.Equals(other.PosOffset);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(TargetVertex, PosOffset);
     }
 
     [DebuggerDisplay("BoneMorphElement (TargetBone={TargetBone})")]
-    public struct BoneMorphElement
+    public struct BoneMorphElement : IEquatable<BoneMorphElement>
     {
         public int TargetBone;
         public Vector3 Translate;
         public Vector4 Quaternion;
+
+        public override bool Equals(object? obj) => obj is BoneMorphElement element && Equals(element);
+
+        public bool Equals(BoneMorphElement other)
+        {
+            return TargetBone == other.TargetBone &&
+                   Translate.Equals(other.Translate) &&
+                   Quaternion.Equals(other.Quaternion);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(TargetBone, Translate, Quaternion);
     }
 
     [DebuggerDisplay("UVMorphElement (TargetVertex={TargetVertex})")]
-    public struct UVMorphElement
+    public struct UVMorphElement : IEquatable<UVMorphElement>
     {
         public int TargetVertex;
         public Vector4 UVOffset;
+
+        public override bool Equals(object? obj) => obj is UVMorphElement element && Equals(element);
+
+        public bool Equals(UVMorphElement other)
+        {
+            return TargetVertex == other.TargetVertex &&
+                   UVOffset.Equals(other.UVOffset);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(TargetVertex, UVOffset);
     }
 
     [DebuggerDisplay("MaterialMorphElement (Material={Material})")]
-    public struct MaterialMorphElement
+    public struct MaterialMorphElement : IEquatable<MaterialMorphElement>
     {
         public int Material;
         public bool IsAllMaterialTarget => Material == -1;
@@ -315,35 +548,105 @@ namespace MMDTools.Unmanaged
         public Color TextureCoef;
         public Color SphereTextureCoef;
         public Color ToonTextureCoef;
+
+        public override bool Equals(object? obj) => obj is MaterialMorphElement element && Equals(element);
+
+        public bool Equals(MaterialMorphElement other)
+        {
+            return Material == other.Material &&
+                   IsAllMaterialTarget == other.IsAllMaterialTarget &&
+                   CalcMode == other.CalcMode &&
+                   Diffuse.Equals(other.Diffuse) &&
+                   Specular.Equals(other.Specular) &&
+                   Shininess == other.Shininess &&
+                   Ambient.Equals(other.Ambient) &&
+                   EdgeColor.Equals(other.EdgeColor) &&
+                   EdgeSize == other.EdgeSize &&
+                   TextureCoef.Equals(other.TextureCoef) &&
+                   SphereTextureCoef.Equals(other.SphereTextureCoef) &&
+                   ToonTextureCoef.Equals(other.ToonTextureCoef);
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Material);
+            hash.Add(IsAllMaterialTarget);
+            hash.Add(CalcMode);
+            hash.Add(Diffuse);
+            hash.Add(Specular);
+            hash.Add(Shininess);
+            hash.Add(Ambient);
+            hash.Add(EdgeColor);
+            hash.Add(EdgeSize);
+            hash.Add(TextureCoef);
+            hash.Add(SphereTextureCoef);
+            hash.Add(ToonTextureCoef);
+            return hash.ToHashCode();
+        }
     }
 
     [DebuggerDisplay("FlipMorphElement (TargetMorph={TargetMorph})")]
-    public struct FlipMorphElement
+    public struct FlipMorphElement : IEquatable<FlipMorphElement>
     {
         public int TargetMorph;
         public float MorphRatio;
+
+        public override bool Equals(object? obj) => obj is FlipMorphElement element && Equals(element);
+
+        public bool Equals(FlipMorphElement other)
+        {
+            return TargetMorph == other.TargetMorph &&
+                   MorphRatio == other.MorphRatio;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(TargetMorph, MorphRatio);
     }
 
     [DebuggerDisplay("ImpulseMorphElement (TargetRigidBody={TargetRigidBody})")]
-    public struct ImpulseMorphElement
+    public struct ImpulseMorphElement : IEquatable<ImpulseMorphElement>
     {
         public int TargetRigidBody;
         public bool IsLocal;
         public Vector3 Velocity;
         public Vector3 RotationTorque;
+
+        public override bool Equals(object? obj) => obj is ImpulseMorphElement element && Equals(element);
+
+        public bool Equals(ImpulseMorphElement other)
+        {
+            return TargetRigidBody == other.TargetRigidBody &&
+                   IsLocal == other.IsLocal &&
+                   Velocity.Equals(other.Velocity) &&
+                   RotationTorque.Equals(other.RotationTorque);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(TargetRigidBody, IsLocal, Velocity, RotationTorque);
     }
     
     [DebuggerDisplay("DisplayFrame (Name={Name})")]
-    public readonly struct DisplayFrame
+    public readonly struct DisplayFrame : IEquatable<DisplayFrame>
     {
         public readonly ReadOnlyRawString Name;
         public readonly ReadOnlyRawString NameEnglish;
         public readonly DisplayFrameType Type;
         public readonly ReadOnlyRawArray<DisplayFrameElement> Elements;
+
+        public override bool Equals(object? obj) => obj is DisplayFrame frame && Equals(frame);
+
+        public bool Equals(DisplayFrame other)
+        {
+            return Name.Equals(other.Name) &&
+                   NameEnglish.Equals(other.NameEnglish) &&
+                   Type == other.Type &&
+                   Elements.Equals(other.Elements);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(Name, NameEnglish, Type, Elements);
     }
 
     [DebuggerDisplay("RigidBody (Name={Name})")]
-    public readonly struct RigidBody
+    public readonly struct RigidBody : IEquatable<RigidBody>
     {
         public readonly ReadOnlyRawString Name;
         public readonly ReadOnlyRawString NameEnglish;
@@ -361,10 +664,54 @@ namespace MMDTools.Unmanaged
         public readonly float Recoil;
         public readonly float Friction;
         public readonly RigidBodyPhysicsType PhysicsType;
+
+        public override bool Equals(object? obj) => obj is RigidBody body && Equals(body);
+
+        public bool Equals(RigidBody other)
+        {
+            return Name.Equals(other.Name) &&
+                   NameEnglish.Equals(other.NameEnglish) &&
+                   Bone == other.Bone &&
+                   HasBone == other.HasBone &&
+                   Group == other.Group &&
+                   GroupTarget == other.GroupTarget &&
+                   Shape == other.Shape &&
+                   Size.Equals(other.Size) &&
+                   Position.Equals(other.Position) &&
+                   RotationRadian.Equals(other.RotationRadian) &&
+                   Mass == other.Mass &&
+                   TranslationAttenuation == other.TranslationAttenuation &&
+                   RotationAttenuation == other.RotationAttenuation &&
+                   Recoil == other.Recoil &&
+                   Friction == other.Friction &&
+                   PhysicsType == other.PhysicsType;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Name);
+            hash.Add(NameEnglish);
+            hash.Add(Bone);
+            hash.Add(HasBone);
+            hash.Add(Group);
+            hash.Add(GroupTarget);
+            hash.Add(Shape);
+            hash.Add(Size);
+            hash.Add(Position);
+            hash.Add(RotationRadian);
+            hash.Add(Mass);
+            hash.Add(TranslationAttenuation);
+            hash.Add(RotationAttenuation);
+            hash.Add(Recoil);
+            hash.Add(Friction);
+            hash.Add(PhysicsType);
+            return hash.ToHashCode();
+        }
     }
 
     [DebuggerDisplay("Joint (Name={Name})")]
-    public readonly struct Joint
+    public readonly struct Joint : IEquatable<Joint>
     {
         public readonly ReadOnlyRawString Name;
         public readonly ReadOnlyRawString NameEnglish;
@@ -379,10 +726,48 @@ namespace MMDTools.Unmanaged
         public readonly Vector3 RotationRadianMaxLimit;
         public readonly Vector3 TranslationSpring;
         public readonly Vector3 RotationSpring;
+
+        public override bool Equals(object? obj) => obj is Joint joint && Equals(joint);
+
+        public bool Equals(Joint other)
+        {
+            return Name.Equals(other.Name) &&
+                   NameEnglish.Equals(other.NameEnglish) &&
+                   Type == other.Type &&
+                   RigidBody1 == other.RigidBody1 &&
+                   RigidBody2 == other.RigidBody2 &&
+                   Position.Equals(other.Position) &&
+                   RotationRadian.Equals(other.RotationRadian) &&
+                   TranslationMinLimit.Equals(other.TranslationMinLimit) &&
+                   TranslationMaxLimit.Equals(other.TranslationMaxLimit) &&
+                   RotationRadianMinLimit.Equals(other.RotationRadianMinLimit) &&
+                   RotationRadianMaxLimit.Equals(other.RotationRadianMaxLimit) &&
+                   TranslationSpring.Equals(other.TranslationSpring) &&
+                   RotationSpring.Equals(other.RotationSpring);
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Name);
+            hash.Add(NameEnglish);
+            hash.Add(Type);
+            hash.Add(RigidBody1);
+            hash.Add(RigidBody2);
+            hash.Add(Position);
+            hash.Add(RotationRadian);
+            hash.Add(TranslationMinLimit);
+            hash.Add(TranslationMaxLimit);
+            hash.Add(RotationRadianMinLimit);
+            hash.Add(RotationRadianMaxLimit);
+            hash.Add(TranslationSpring);
+            hash.Add(RotationSpring);
+            return hash.ToHashCode();
+        }
     }
 
     [DebuggerDisplay("SoftBody (Name={Name})")]
-    public readonly struct SoftBody
+    public readonly struct SoftBody : IEquatable<SoftBody>
     {
         public readonly ReadOnlyRawString Name;
         public readonly ReadOnlyRawString NameEnglish;
@@ -402,9 +787,57 @@ namespace MMDTools.Unmanaged
         public readonly SoftBodyMaterial Material;
         public readonly ReadOnlyRawArray<AnchorRigidBody> AnchorRigidBodies;
         public readonly ReadOnlyRawArray<int> PinnedVertex;
+
+        public override bool Equals(object? obj) => obj is SoftBody body && Equals(body);
+
+        public bool Equals(SoftBody other)
+        {
+            return Name.Equals(other.Name) &&
+                   NameEnglish.Equals(other.NameEnglish) &&
+                   Shape == other.Shape &&
+                   TargetMaterial == other.TargetMaterial &&
+                   Group == other.Group &&
+                   GroupTarget == other.GroupTarget &&
+                   Mode == other.Mode &&
+                   BLinkDistance == other.BLinkDistance &&
+                   ClusterCount == other.ClusterCount &&
+                   TotalMass == other.TotalMass &&
+                   CollisionMargin == other.CollisionMargin &&
+                   AeroModel == other.AeroModel &&
+                   Config.Equals(other.Config) &&
+                   Cluster.Equals(other.Cluster) &&
+                   Iteration.Equals(other.Iteration) &&
+                   Material.Equals(other.Material) &&
+                   AnchorRigidBodies.Equals(other.AnchorRigidBodies) &&
+                   PinnedVertex.Equals(other.PinnedVertex);
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(Name);
+            hash.Add(NameEnglish);
+            hash.Add(Shape);
+            hash.Add(TargetMaterial);
+            hash.Add(Group);
+            hash.Add(GroupTarget);
+            hash.Add(Mode);
+            hash.Add(BLinkDistance);
+            hash.Add(ClusterCount);
+            hash.Add(TotalMass);
+            hash.Add(CollisionMargin);
+            hash.Add(AeroModel);
+            hash.Add(Config);
+            hash.Add(Cluster);
+            hash.Add(Iteration);
+            hash.Add(Material);
+            hash.Add(AnchorRigidBodies);
+            hash.Add(PinnedVertex);
+            return hash.ToHashCode();
+        }
     }
 
-    public struct SoftBodyConfig
+    public struct SoftBodyConfig : IEquatable<SoftBodyConfig>
     {
         public float VCF;
         public float DP;
@@ -418,9 +851,45 @@ namespace MMDTools.Unmanaged
         public float KHR;
         public float SHR;
         public float AHR;
+
+        public override bool Equals(object? obj) => obj is SoftBodyConfig config && Equals(config);
+
+        public bool Equals(SoftBodyConfig other)
+        {
+            return VCF == other.VCF &&
+                   DP == other.DP &&
+                   DG == other.DG &&
+                   LF == other.LF &&
+                   PR == other.PR &&
+                   VC == other.VC &&
+                   DF == other.DF &&
+                   MT == other.MT &&
+                   CHR == other.CHR &&
+                   KHR == other.KHR &&
+                   SHR == other.SHR &&
+                   AHR == other.AHR;
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(VCF);
+            hash.Add(DP);
+            hash.Add(DG);
+            hash.Add(LF);
+            hash.Add(PR);
+            hash.Add(VC);
+            hash.Add(DF);
+            hash.Add(MT);
+            hash.Add(CHR);
+            hash.Add(KHR);
+            hash.Add(SHR);
+            hash.Add(AHR);
+            return hash.ToHashCode();
+        }
     }
 
-    public struct SoftBodyCluster
+    public struct SoftBodyCluster : IEquatable<SoftBodyCluster>
     {
         public float SRHR_CL;
         public float SKHR_CL;
@@ -428,46 +897,116 @@ namespace MMDTools.Unmanaged
         public float SR_SPLT_CL;
         public float SK_SPLT_CL;
         public float SS_SPLT_CL;
+
+        public override bool Equals(object? obj) => obj is SoftBodyCluster cluster && Equals(cluster);
+
+        public bool Equals(SoftBodyCluster other)
+        {
+            return SRHR_CL == other.SRHR_CL &&
+                   SKHR_CL == other.SKHR_CL &&
+                   SSHR_CL == other.SSHR_CL &&
+                   SR_SPLT_CL == other.SR_SPLT_CL &&
+                   SK_SPLT_CL == other.SK_SPLT_CL &&
+                   SS_SPLT_CL == other.SS_SPLT_CL;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(SRHR_CL, SKHR_CL, SSHR_CL, SR_SPLT_CL, SK_SPLT_CL, SS_SPLT_CL);
     }
 
-    public struct SoftBodyIteration
+    public struct SoftBodyIteration : IEquatable<SoftBodyIteration>
     {
         public int V_IT;
         public int P_IT;
         public int D_IT;
         public int C_IT;
+
+        public override bool Equals(object? obj) => obj is SoftBodyIteration iteration && Equals(iteration);
+
+        public bool Equals(SoftBodyIteration other)
+        {
+            return V_IT == other.V_IT &&
+                   P_IT == other.P_IT &&
+                   D_IT == other.D_IT &&
+                   C_IT == other.C_IT;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(V_IT, P_IT, D_IT, C_IT);
     }
 
-    public struct SoftBodyMaterial
+    public struct SoftBodyMaterial : IEquatable<SoftBodyMaterial>
     {
         public float LST;
         public float AST;
         public float VST;
+
+        public override bool Equals(object? obj) => obj is SoftBodyMaterial material && Equals(material);
+
+        public bool Equals(SoftBodyMaterial other)
+        {
+            return LST == other.LST &&
+                   AST == other.AST &&
+                   VST == other.VST;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(LST, AST, VST);
     }
 
 
     [DebuggerDisplay("IKLink (Bone={Bone})")]
-    public struct IKLink
+    public struct IKLink : IEquatable<IKLink>
     {
         public int Bone;
         public bool IsEnableAngleLimited;
         public Vector3 MinLimit;
         public Vector3 MaxLimit;
+
+        public override bool Equals(object? obj) => obj is IKLink link && Equals(link);
+
+        public bool Equals(IKLink other)
+        {
+            return Bone == other.Bone &&
+                   IsEnableAngleLimited == other.IsEnableAngleLimited &&
+                   MinLimit.Equals(other.MinLimit) &&
+                   MaxLimit.Equals(other.MaxLimit);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(Bone, IsEnableAngleLimited, MinLimit, MaxLimit);
     }
 
     [DebuggerDisplay("DisplayFrameElement (TargetType={TargetType}, TargetIndex={TargetIndex})")]
-    public struct DisplayFrameElement
+    public struct DisplayFrameElement : IEquatable<DisplayFrameElement>
     {
         public DisplayFrameElementTarget TargetType;
         public int TargetIndex;
+
+        public override bool Equals(object? obj) => obj is DisplayFrameElement element && Equals(element);
+
+        public bool Equals(DisplayFrameElement other)
+        {
+            return TargetType == other.TargetType &&
+                   TargetIndex == other.TargetIndex;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(TargetType, TargetIndex);
     }
 
     [DebuggerDisplay("AnchorRigidBody (RigidBody={RigidBody}, Vertex={Vertex}, IsNearMode={IsNearMode})")]
-    public struct AnchorRigidBody
+    public struct AnchorRigidBody : IEquatable<AnchorRigidBody>
     {
         public int RigidBody;
         public int Vertex;
         public bool IsNearMode;
+
+        public override bool Equals(object? obj) => obj is AnchorRigidBody body && Equals(body);
+
+        public bool Equals(AnchorRigidBody other)
+        {
+            return RigidBody == other.RigidBody &&
+                   Vertex == other.Vertex &&
+                   IsNearMode == other.IsNearMode;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(RigidBody, Vertex, IsNearMode);
     }
 
     public enum PMXVersion

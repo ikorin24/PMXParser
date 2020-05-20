@@ -249,11 +249,19 @@ namespace MMDTools
     }
 
     [DebuggerDisplay("({V1}, {V2}, {V3})")]
-    public struct Surface
+    public struct Surface : IEquatable<Surface>
     {
         public int V1 { get; internal set; }
         public int V2 { get; internal set; }
         public int V3 { get; internal set; }
+
+        public override bool Equals(object? obj) => obj is Surface surface && Equals(surface);
+
+        public bool Equals(Surface other) => V1 == other.V1 &&
+                                             V2 == other.V2 &&
+                                             V3 == other.V3;
+
+        public override int GetHashCode() => HashCode.Combine(V1, V2, V3);
     }
 
     [DebuggerDisplay("Material (Name={Name})")]
