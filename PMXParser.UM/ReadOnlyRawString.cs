@@ -21,10 +21,16 @@ namespace MMDTools.Unmanaged
         public readonly Encoding GetEncoding() => _rawString.GetEncoding();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly int GetCharCount() => _rawString.GetCharCount();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<byte> AsSpan() => _rawString.AsSpan();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString() => _rawString.ToString();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReadOnlySpan<char> ToString(Span<char> buffer) => _rawString.ToString(buffer);
 
         public override bool Equals(object? obj) => obj is ReadOnlyRawString str && Equals(str);
 

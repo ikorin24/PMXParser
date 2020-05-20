@@ -48,15 +48,36 @@ namespace MMDTools.Unmanaged
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly int GetCharCount() => GetEncoding().GetCharCount((byte*)_headPointer, _byteLength);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override string ToString()
         {
             if(_byteLength == 0) { return string.Empty; }
             return GetEncoding().GetString((byte*)_headPointer, _byteLength);
         }
 
+        public readonly ReadOnlySpan<char> ToString(Span<char> buffer)
+        {
+            var enc = GetEncoding();
+
+            // Skip exact checking if buffer has sufficient length.
+            if(buffer.Length < enc.GetMaxCharCount(_byteLength)) {
+                var len = enc.GetCharCount((byte*)_headPointer, _byteLength);
+                if(buffer.Length < len) { throw new ArgumentException($"Length of buffer is too short. It needs {len} length of char buffer"); }
+            }
+
+            int charLen;
+            fixed(char* dest = buffer) {
+                charLen = enc.GetChars((byte*)_headPointer, _byteLength, dest, buffer.Length);
+            }
+            return buffer.Slice(0, charLen);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>((void*)_headPointer, _byteLength);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ReadOnlyRawString AsReadOnly() => new ReadOnlyRawString(this);
 
 
