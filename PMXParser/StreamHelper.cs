@@ -31,8 +31,10 @@ namespace MMDTools
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReleaseBuffer()
         {
-            if(_tlsBuffer != null) {
-                ArrayPool<byte>.Shared.Return(_tlsBuffer);
+            var tlsBuffer = _tlsBuffer;
+            if(tlsBuffer != null) {
+                ArrayPool<byte>.Shared.Return(tlsBuffer);
+                _tlsBuffer = null;
             }
         }
 
