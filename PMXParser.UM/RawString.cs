@@ -9,7 +9,7 @@ namespace MMDTools.Unmanaged
 {
     [DebuggerDisplay("{ToString()}")]
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe readonly struct RawString : IDisposable
+    internal unsafe readonly struct RawString : IDisposable
     {
         private readonly IntPtr _headPointer;
         public readonly int ByteLength;
@@ -70,24 +70,5 @@ namespace MMDTools.Unmanaged
         }
 
         public static implicit operator ReadOnlyRawString(RawString rawString) => new ReadOnlyRawString(rawString);
-    }
-
-    [DebuggerDisplay("{ToString()}")]
-    public unsafe readonly struct ReadOnlyRawString
-    {
-        private readonly RawString _rawString;
-        public readonly int ByteLength => _rawString.ByteLength;
-        public readonly StringEncoding Encoding => _rawString.Encoding;
-
-        internal ReadOnlyRawString(RawString rawString) => _rawString = rawString;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Encoding GetEncoding() => _rawString.GetEncoding();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<byte> AsSpan() => _rawString.AsSpan();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override string ToString() => _rawString.ToString();
     }
 }

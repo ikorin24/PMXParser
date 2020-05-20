@@ -9,7 +9,7 @@ namespace MMDTools.Unmanaged
     [DebuggerTypeProxy(typeof(DisposableRawArrayDebuggerTypeProxy<>))]
     [DebuggerDisplay("DisposableRawArray<{typeof(T).Name}>[{Length}]")]
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe readonly struct DisposableRawArray<T> : IDisposable where T : unmanaged, IDisposable
+    internal unsafe readonly struct DisposableRawArray<T> : IDisposable where T : unmanaged, IDisposable
     {
         // RawArray, ReadOnlyRawArray と同じメモリレイアウトにしなければならない
 
