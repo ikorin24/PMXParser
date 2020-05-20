@@ -8,6 +8,7 @@ using System.Text;
 namespace MMDTools.Unmanaged
 {
     [DebuggerDisplay("{ToString()}")]
+    [StructLayout(LayoutKind.Sequential)]
     public unsafe readonly struct RawString : IDisposable
     {
         private readonly IntPtr _headPointer;
@@ -32,21 +33,29 @@ namespace MMDTools.Unmanaged
             UnmanagedMemoryChecker.RegisterNewAllocatedBytes(ByteLength);
         }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Encoding GetEncoding()
+        {
+            return Encoding switch
+            {
+                StringEncoding.UTF16 => System.Text.Encoding.Unicode,
+                StringEncoding.UTF8 => System.Text.Encoding.UTF8,
+                _ => throw new NotSupportedException("invalid encoding"),
+            };
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override string ToString()
         {
             if(ByteLength == 0) { return string.Empty; }
-            var enc = Encoding switch
-            {
-                StringEncoding.UTF16 => System.Text.Encoding.Unicode,
-                StringEncoding.UTF8 => System.Text.Encoding.UTF8,
-                _ => throw new NotSupportedException(),
-            };
-            return enc.GetString((byte*)_headPointer, ByteLength);
+            return GetEncoding().GetString((byte*)_headPointer, ByteLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>((void*)_headPointer, ByteLength);
+
+        public readonly ReadOnlyRawString AsReadOnly() => new ReadOnlyRawString(this);
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -59,5 +68,26 @@ namespace MMDTools.Unmanaged
             }
             Unsafe.AsRef(ByteLength) = 0;
         }
+
+        public static implicit operator ReadOnlyRawString(RawString rawString) => new ReadOnlyRawString(rawString);
+    }
+
+    [DebuggerDisplay("{ToString()}")]
+    public unsafe readonly struct ReadOnlyRawString
+    {
+        private readonly RawString _rawString;
+        public readonly int ByteLength => _rawString.ByteLength;
+        public readonly StringEncoding Encoding => _rawString.Encoding;
+
+        internal ReadOnlyRawString(RawString rawString) => _rawString = rawString;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Encoding GetEncoding() => _rawString.GetEncoding();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<byte> AsSpan() => _rawString.AsSpan();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override string ToString() => _rawString.ToString();
     }
 }

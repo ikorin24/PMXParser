@@ -9,45 +9,6 @@ using System.Threading;
 
 namespace MMDTools.Unmanaged
 {
-    public unsafe readonly struct PMXObject : IDisposable
-    {
-        /// <summary>pointer to <see cref="PMXObject_"/></summary>
-        private readonly IntPtr _ptr;
-
-        internal PMXObject_* Entity => (PMXObject_*)_ptr;
-
-        private unsafe PMXObject(PMXObject_* ptr) => _ptr = (IntPtr)ptr;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal unsafe static PMXObject New()
-        {
-            var ptr = (PMXObject_*)Marshal.AllocHGlobal(sizeof(PMXObject_));
-
-            // Initialized memory for safety.
-            *ptr = default;
-
-            UnmanagedMemoryChecker.RegisterNewAllocatedBytes(sizeof(PMXObject_));
-            return new PMXObject(ptr);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Dispose()
-        {
-            // easy check
-            if(_ptr == IntPtr.Zero) { return; }
-
-            // thread-safe check
-            var p = Interlocked.Exchange(ref Unsafe.AsRef(_ptr), IntPtr.Zero);
-            if(p == IntPtr.Zero) { return; }
-
-            ((PMXObject_*)p)->Dispose();
-            Marshal.FreeHGlobal(p);
-            UnmanagedMemoryChecker.RegisterReleasedBytes(sizeof(PMXObject_));
-
-            UnmanagedMemoryChecker.AssertResourceReleased();
-    }
-    }
-
     internal unsafe struct PMXObject_ : IDisposable
     {
         /// <summary>Get PMX file version</summary>
@@ -62,7 +23,7 @@ namespace MMDTools.Unmanaged
         /// <summary>Get English comment of pmx data</summary>
         public RawString CommentEnglish;
 
-        /// <summary>Get <see cref="Vertex"/> list</summary>
+        ///// <summary>Get <see cref="Vertex"/> list</summary>
         public RawArray<Vertex> VertexList;
 
         /// <summary>Get <see cref="Surface"/> list</summary>
@@ -71,26 +32,26 @@ namespace MMDTools.Unmanaged
         /// <summary>Get list of texture file path</summary>
         public DisposableRawArray<RawString> TextureList;
 
-        /// <summary>Get <see cref="Material"/> list</summary>
-        public DisposableRawArray<Material> MaterialList;
+        /// <summary>Get <see cref="Material_"/> list</summary>
+        public DisposableRawArray<Material_> MaterialList;
 
-        /// <summary>Get <see cref="Bone"/> list</summary>
-        public DisposableRawArray<Bone> BoneList;
+        /// <summary>Get <see cref="Bone_"/> list</summary>
+        public DisposableRawArray<Bone_> BoneList;
 
-        /// <summary>Get <see cref="Morph"/> list</summary>
-        public DisposableRawArray<Morph> MorphList;
+        /// <summary>Get <see cref="Morph_"/> list</summary>
+        public DisposableRawArray<Morph_> MorphList;
 
-        /// <summary>Get <see cref="DisplayFrame"/> list</summary>
-        public DisposableRawArray<DisplayFrame> DisplayFrameList;
+        /// <summary>Get <see cref="DisplayFrame_"/> list</summary>
+        public DisposableRawArray<DisplayFrame_> DisplayFrameList;
 
-        /// <summary>Get <see cref="RigidBody"/> list</summary>
-        public DisposableRawArray<RigidBody> RigidBodyList;
+        /// <summary>Get <see cref="RigidBody_"/> list</summary>
+        public DisposableRawArray<RigidBody_> RigidBodyList;
 
-        /// <summary>Get <see cref="Joint"/> list</summary>
-        public DisposableRawArray<Joint> JointList;
+        /// <summary>Get <see cref="Joint_"/> list</summary>
+        public DisposableRawArray<Joint_> JointList;
 
-        /// <summary>Get <see cref="SoftBody"/> list</summary>
-        public DisposableRawArray<SoftBody> SoftBodyList;
+        /// <summary>Get <see cref="SoftBody_"/> list</summary>
+        public DisposableRawArray<SoftBody_> SoftBodyList;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose()
@@ -112,19 +73,13 @@ namespace MMDTools.Unmanaged
         }
     }
 
-    public enum StringEncoding : byte
-    {
-        UTF16 = 0,
-        UTF8 = 1,
-    }
-
     [DebuggerDisplay("({X}, {Y})")]
     public struct Vector2 : IEquatable<Vector2>
     {
         public float X;
         public float Y;
 
-        public Vector2(float x, float y) => (X, Y) = (x, y);        
+        public Vector2(float x, float y) => (X, Y) = (x, y);
 
         public readonly override bool Equals(object? obj) => obj is Vector2 vector ? Equals(vector) : false;
 
@@ -236,7 +191,7 @@ namespace MMDTools.Unmanaged
     }
 
     [DebuggerDisplay("Material (Name={Name})")]
-    public struct Material : IDisposable
+    public struct Material_ : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -264,8 +219,28 @@ namespace MMDTools.Unmanaged
         }
     }
 
+    public readonly struct Material
+    {
+        public readonly ReadOnlyRawString Name;
+        public readonly ReadOnlyRawString NameEnglish;
+        public readonly Color Diffuse;
+        public readonly Color Specular;
+        public readonly float Shininess;
+        public readonly Color Ambient;
+        public readonly MaterialDrawFlag DrawFlag;
+        public readonly Color EdgeColor;
+        public readonly float EdgeSize;
+        public readonly int Texture;
+        public readonly int SphereTextre;
+        public readonly SphereTextureMode SphereTextureMode;
+        public readonly SharedToonMode SharedToonMode;
+        public readonly int ToonTexture;
+        public readonly ReadOnlyRawString Memo;
+        public readonly int VertexCount;
+    }
+
     [DebuggerDisplay("Bone (Name={Name})")]
-    public struct Bone : IDisposable
+    public struct Bone_ : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -295,8 +270,31 @@ namespace MMDTools.Unmanaged
         }
     }
 
+    [DebuggerDisplay("Bone (Name={Name})")]
+    public readonly struct Bone
+    {
+        public readonly ReadOnlyRawString Name;
+        public readonly ReadOnlyRawString NameEnglish;
+        public readonly Vector3 Position;
+        public readonly int ParentBone;
+        public readonly int TransformDepth;
+        public readonly BoneFlag BoneFlag;
+        public readonly int ConnectedBone;
+        public readonly Vector3 PositionOffset;
+        public readonly int AttatchParent;
+        public readonly float AttatchRatio;
+        public readonly Vector3 AxisVec;
+        public readonly Vector3 XAxisVec;
+        public readonly Vector3 ZAxisVec;
+        public readonly int Key;
+        public readonly int IKTarget;
+        public readonly int IterCount;
+        public readonly float MaxRadianPerIter;
+        public readonly ReadOnlyRawArray<IKLink> IKLinks;
+    }
+
     [DebuggerDisplay("Morph (Name={Name})")]
-    public struct Morph : IDisposable
+    public struct Morph_ : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -323,6 +321,22 @@ namespace MMDTools.Unmanaged
             FlipMorphElements.Dispose();
             ImpulseMorphElements.Dispose();
         }
+    }
+
+    [DebuggerDisplay("Morph (Name={Name})")]
+    public readonly struct Morph
+    {
+        public readonly ReadOnlyRawString Name;
+        public readonly ReadOnlyRawString NameEnglish;
+        public readonly MorphTarget MorphTarget;
+        public readonly MorphType MorphType;
+        public readonly ReadOnlyRawArray<GroupMorphElement> GroupMorphElements;
+        public readonly ReadOnlyRawArray<VertexMorphElement> VertexMorphElements;
+        public readonly ReadOnlyRawArray<BoneMorphElement> BoneMorphElements;
+        public readonly ReadOnlyRawArray<UVMorphElement> UVMorphElements;
+        public readonly ReadOnlyRawArray<MaterialMorphElement> MaterialMorphElements;
+        public readonly ReadOnlyRawArray<FlipMorphElement> FlipMorphElements;
+        public readonly ReadOnlyRawArray<ImpulseMorphElement> ImpulseMorphElements;
     }
 
     [DebuggerDisplay("GroupMorphElement (TargetMorph={TargetMorph})")]
@@ -388,7 +402,7 @@ namespace MMDTools.Unmanaged
     }
 
     [DebuggerDisplay("DisplayFrame (Name={Name})")]
-    public struct DisplayFrame : IDisposable
+    public struct DisplayFrame_ : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -404,8 +418,17 @@ namespace MMDTools.Unmanaged
         }
     }
 
+    [DebuggerDisplay("DisplayFrame (Name={Name})")]
+    public readonly struct DisplayFrame
+    {
+        public readonly ReadOnlyRawString Name;
+        public readonly ReadOnlyRawString NameEnglish;
+        public readonly DisplayFrameType Type;
+        public readonly ReadOnlyRawArray<DisplayFrameElement> Elements;
+    }
+
     [DebuggerDisplay("RigidBody (Name={Name})")]
-    public struct RigidBody : IDisposable
+    public struct RigidBody_ : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -432,8 +455,29 @@ namespace MMDTools.Unmanaged
         }
     }
 
+    [DebuggerDisplay("RigidBody (Name={Name})")]
+    public readonly struct RigidBody
+    {
+        public readonly ReadOnlyRawString Name;
+        public readonly ReadOnlyRawString NameEnglish;
+        public readonly int Bone;
+        public readonly bool HasBone;        // Bone >= 0
+        public readonly byte Group;
+        public readonly ushort GroupTarget;
+        public readonly RigidBodyShape Shape;
+        public readonly Vector3 Size;
+        public readonly Vector3 Position;
+        public readonly Vector3 RotationRadian;
+        public readonly float Mass;
+        public readonly float TranslationAttenuation;
+        public readonly float RotationAttenuation;
+        public readonly float Recoil;
+        public readonly float Friction;
+        public readonly RigidBodyPhysicsType PhysicsType;
+    }
+
     [DebuggerDisplay("Joint (Name={Name})")]
-    public struct Joint : IDisposable
+    public struct Joint_ : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -457,8 +501,26 @@ namespace MMDTools.Unmanaged
         }
     }
 
+    [DebuggerDisplay("Joint (Name={Name})")]
+    public readonly struct Joint
+    {
+        public readonly ReadOnlyRawString Name;
+        public readonly ReadOnlyRawString NameEnglish;
+        public readonly JointType Type;
+        public readonly int RigidBody1;
+        public readonly int RigidBody2;
+        public readonly Vector3 Position;
+        public readonly Vector3 RotationRadian;
+        public readonly Vector3 TranslationMinLimit;
+        public readonly Vector3 TranslationMaxLimit;
+        public readonly Vector3 RotationRadianMinLimit;
+        public readonly Vector3 RotationRadianMaxLimit;
+        public readonly Vector3 TranslationSpring;
+        public readonly Vector3 RotationSpring;
+    }
+
     [DebuggerDisplay("SoftBody (Name={Name})")]
-    public struct SoftBody : IDisposable
+    public struct SoftBody_ : IDisposable
     {
         public RawString Name;
         public RawString NameEnglish;
@@ -487,6 +549,30 @@ namespace MMDTools.Unmanaged
             AnchorRigidBodies.Dispose();
         }
     }
+
+    [DebuggerDisplay("SoftBody (Name={Name})")]
+    public readonly struct SoftBody
+    {
+        public readonly ReadOnlyRawString Name;
+        public readonly ReadOnlyRawString NameEnglish;
+        public readonly SoftBodyShape Shape;
+        public readonly int TargetMaterial;
+        public readonly byte Group;
+        public readonly ushort GroupTarget;
+        public readonly SoftBodyModeFlag Mode;
+        public readonly int BLinkDistance;
+        public readonly int ClusterCount;
+        public readonly float TotalMass;
+        public readonly float CollisionMargin;
+        public readonly SoftBodyAeroModel AeroModel;
+        public readonly SoftBodyConfig Config;
+        public readonly SoftBodyCluster Cluster;
+        public readonly SoftBodyIteration Iteration;
+        public readonly SoftBodyMaterial Material;
+        public readonly ReadOnlyRawArray<AnchorRigidBody> AnchorRigidBodies;
+        public readonly ReadOnlyRawArray<int> PinnedVertex;
+    }
+
 
     public struct SoftBodyConfig
     {
@@ -560,6 +646,12 @@ namespace MMDTools.Unmanaged
         V20 = 20,
         /// <summary>PMX Ver 2.1</summary>
         V21 = 21,
+    }
+
+    public enum StringEncoding : byte
+    {
+        UTF16 = 0,
+        UTF8 = 1,
     }
 
     [Flags]

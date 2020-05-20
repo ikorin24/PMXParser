@@ -18,9 +18,9 @@ namespace MMDTools.Unmanaged
 
         public static PMXObject Parse(Stream stream)
         {
-            PMXObject pmx = default;
+            PMXObject pmx = default!;
             try {
-                pmx = PMXObject.New();
+                pmx = new PMXObject();
                 ParseHeader(stream, out var localInfo, pmx.Entity);
                 ParseModelInfo(stream, localInfo, pmx.Entity);
                 ParseVertex(stream, localInfo, pmx.Entity);
@@ -36,7 +36,7 @@ namespace MMDTools.Unmanaged
                 return pmx;
             }
             catch(Exception ex) {
-                pmx.Dispose();
+                pmx?.Dispose();
                 throw new Exception("File parsing failed.", ex);
             }
             finally {
@@ -158,7 +158,7 @@ namespace MMDTools.Unmanaged
         private static void ParseMaterial(Stream stream, in ParserLocalInfo localInfo, PMXObject_* pmx)
         {
             var materialCount = stream.NextInt32();
-            pmx->MaterialList = new DisposableRawArray<Material>(materialCount);
+            pmx->MaterialList = new DisposableRawArray<Material_>(materialCount);
             for(int i = 0; i < materialCount; i++) {
                 ref var material = ref pmx->MaterialList[i];
                 material.Name = stream.NextRawString(stream.NextInt32(), localInfo.Encoding);
@@ -195,7 +195,7 @@ namespace MMDTools.Unmanaged
         private static void ParseBone(Stream stream, in ParserLocalInfo localInfo, PMXObject_* pmx)
         {
             var boneCount = stream.NextInt32();
-            pmx->BoneList = new DisposableRawArray<Bone>(boneCount);
+            pmx->BoneList = new DisposableRawArray<Bone_>(boneCount);
             for(int i = 0; i < boneCount; i++) {
                 ref var bone = ref pmx->BoneList[i];
                 bone.Name = stream.NextRawString(stream.NextInt32(), localInfo.Encoding);
@@ -250,7 +250,7 @@ namespace MMDTools.Unmanaged
         private static void ParseMorph(Stream stream, in ParserLocalInfo localInfo, PMXObject_* pmx)
         {
             var morphCount = stream.NextInt32();
-            pmx->MorphList = new DisposableRawArray<Morph>(morphCount);
+            pmx->MorphList = new DisposableRawArray<Morph_>(morphCount);
             for(int i = 0; i < morphCount; i++) {
                 ref var morph = ref pmx->MorphList[i];
                 morph.Name = stream.NextRawString(stream.NextInt32(), localInfo.Encoding);
@@ -349,7 +349,7 @@ namespace MMDTools.Unmanaged
         private static void ParseDisplayFrame(Stream stream, in ParserLocalInfo localInfo, PMXObject_* pmx)
         {
             var displayFrameCount = stream.NextInt32();
-            pmx->DisplayFrameList = new DisposableRawArray<DisplayFrame>(displayFrameCount);
+            pmx->DisplayFrameList = new DisposableRawArray<DisplayFrame_>(displayFrameCount);
             for(int i = 0; i < displayFrameCount; i++) {
                 ref var displayFrame = ref pmx->DisplayFrameList[i];
                 displayFrame.Name = stream.NextRawString(stream.NextInt32(), localInfo.Encoding);
@@ -373,7 +373,7 @@ namespace MMDTools.Unmanaged
         private static void ParseRigidBody(Stream stream, in ParserLocalInfo localInfo, PMXObject_* pmx)
         {
             var rigidBodyCount = stream.NextInt32();
-            pmx->RigidBodyList = new DisposableRawArray<RigidBody>(rigidBodyCount);
+            pmx->RigidBodyList = new DisposableRawArray<RigidBody_>(rigidBodyCount);
             for(int i = 0; i < pmx->RigidBodyList.Length; i++) {
                 ref var rigidBody = ref pmx->RigidBodyList[i];
                 rigidBody.Name = stream.NextRawString(stream.NextInt32(), localInfo.Encoding);
@@ -398,7 +398,7 @@ namespace MMDTools.Unmanaged
         private static void ParseJoint(Stream stream, in ParserLocalInfo localInfo, PMXObject_* pmx)
         {
             var jointCount = stream.NextInt32();
-            pmx->JointList = new DisposableRawArray<Joint>(jointCount);
+            pmx->JointList = new DisposableRawArray<Joint_>(jointCount);
             for(int i = 0; i < pmx->JointList.Length; i++) {
                 ref var joint = ref pmx->JointList[i];
                 joint.Name = stream.NextRawString(stream.NextInt32(), localInfo.Encoding);
@@ -425,7 +425,7 @@ namespace MMDTools.Unmanaged
         {
             if(localInfo.Version < PMXVersion.V21) { return; }
             var softBodyCount = stream.NextInt32();
-            pmx->SoftBodyList = new DisposableRawArray<SoftBody>(softBodyCount);
+            pmx->SoftBodyList = new DisposableRawArray<SoftBody_>(softBodyCount);
             for(int i = 0; i < pmx->SoftBodyList.Length; i++) {
                 ref var softBody = ref pmx->SoftBodyList[i];
                 softBody.Name = stream.NextRawString(stream.NextInt32(), localInfo.Encoding);

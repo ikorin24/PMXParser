@@ -8,8 +8,11 @@ namespace MMDTools.Unmanaged
 {
     [DebuggerTypeProxy(typeof(DisposableRawArrayDebuggerTypeProxy<>))]
     [DebuggerDisplay("DisposableRawArray<{typeof(T).Name}>[{Length}]")]
+    [StructLayout(LayoutKind.Sequential)]
     public unsafe readonly struct DisposableRawArray<T> : IDisposable where T : unmanaged, IDisposable
     {
+        // RawArray, ReadOnlyRawArray と同じメモリレイアウトにしなければならない
+
         private readonly IntPtr _ptr;
         public readonly int Length;
 
@@ -64,6 +67,14 @@ namespace MMDTools.Unmanaged
             if((uint)start >= (uint)Length) { throw new ArgumentOutOfRangeException(); }
             if((uint)start + (uint)length >= (uint)Length) { throw new ArgumentOutOfRangeException(); }
             return new Span<T>((T*)_ptr + start, length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal ReadOnlyRawArray<TTo> AsReadOnly<TTo>() where TTo : unmanaged
+        {
+            if(sizeof(T) != sizeof(TTo)) { throw new InvalidCastException("Type size of element is mismatch."); }
+            ref var this_ = ref Unsafe.AsRef(this);
+            return Unsafe.As<DisposableRawArray<T>, ReadOnlyRawArray<TTo>>(ref this_);
         }
     }
 
