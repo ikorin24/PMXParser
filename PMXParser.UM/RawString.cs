@@ -13,7 +13,8 @@ namespace MMDTools.Unmanaged
     internal unsafe readonly struct RawString : IDisposable, IEquatable<RawString>
     {
         private readonly IntPtr _headPointer;
-        public readonly int ByteLength;
+        private readonly int _byteLength;
+        public readonly int ByteLength => _byteLength;
         public readonly StringEncoding Encoding;
 
         /// <summary>Create <see cref="RawString"/> from pointer and length of bytes.</summary>
@@ -23,15 +24,15 @@ namespace MMDTools.Unmanaged
         {
             if(source.Length == 0) {
                 _headPointer = default;
-                ByteLength = default;
+                _byteLength = default;
                 Encoding = encoding;
                 return;
             }
             _headPointer = Marshal.AllocHGlobal(source.Length);
-            ByteLength = source.Length;
+            _byteLength = source.Length;
             Encoding = encoding;
             source.CopyTo(new Span<byte>((void*)_headPointer, source.Length));
-            UnmanagedMemoryChecker.RegisterNewAllocatedBytes(ByteLength);
+            UnmanagedMemoryChecker.RegisterNewAllocatedBytes(_byteLength);
         }
 
 
@@ -49,12 +50,12 @@ namespace MMDTools.Unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override string ToString()
         {
-            if(ByteLength == 0) { return string.Empty; }
-            return GetEncoding().GetString((byte*)_headPointer, ByteLength);
+            if(_byteLength == 0) { return string.Empty; }
+            return GetEncoding().GetString((byte*)_headPointer, _byteLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>((void*)_headPointer, ByteLength);
+        public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>((void*)_headPointer, _byteLength);
 
         public readonly ReadOnlyRawString AsReadOnly() => new ReadOnlyRawString(this);
 
@@ -63,11 +64,11 @@ namespace MMDTools.Unmanaged
         public void Dispose()
         {
             if(_headPointer != IntPtr.Zero) {
-                UnmanagedMemoryChecker.RegisterReleasedBytes(ByteLength);
+                UnmanagedMemoryChecker.RegisterReleasedBytes(_byteLength);
                 Marshal.FreeHGlobal(_headPointer);
                 Unsafe.AsRef(_headPointer) = IntPtr.Zero;     // Clear pointer into null for safety.
             }
-            Unsafe.AsRef(ByteLength) = 0;
+            Unsafe.AsRef(_byteLength) = 0;
         }
 
         public override bool Equals(object? obj) => obj is RawString @string && Equals(@string);
@@ -75,11 +76,11 @@ namespace MMDTools.Unmanaged
         public bool Equals(RawString other)
         {
             return _headPointer == other._headPointer &&
-                   ByteLength == other.ByteLength &&
+                   _byteLength == other._byteLength &&
                    Encoding == other.Encoding;
         }
 
-        public override int GetHashCode() => HashCode.Combine(_headPointer, ByteLength, Encoding);
+        public override int GetHashCode() => HashCode.Combine(_headPointer, _byteLength, Encoding);
 
         public static implicit operator ReadOnlyRawString(RawString rawString) => new ReadOnlyRawString(rawString);
     }

@@ -2,11 +2,13 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MMDTools.Unmanaged
 {
     [DebuggerDisplay("{ToString()}")]
+    [StructLayout(LayoutKind.Sequential)]
     public unsafe readonly struct ReadOnlyRawString : IEquatable<ReadOnlyRawString>
     {
         private readonly RawString _rawString;
