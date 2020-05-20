@@ -36,15 +36,13 @@ namespace Test
 #endif
         public unsafe void PMXParseVer20(string fileName)
         {
-            //using(var stream = File.OpenRead(fileName))
-            //using(var pmx = PMXParser.Parse(stream)) {
-            //    Assert.Equal(stream.Length, stream.Position);
-            //}
-
             using(var stream = File.OpenRead(fileName)) {
                 using var pmxUm = MMDTools.Unmanaged.PMXParser.Parse(stream);
+                Assert.Equal(stream.Length, stream.Position);
                 stream.Position = 0;
                 var pmx = MMDTools.PMXParser.Parse(stream);
+                Assert.Equal(stream.Length, stream.Position);
+
 
                 Assert.True(StructEqual(pmx.Version, pmxUm.Version));
                 Assert.Equal(pmx.Name, pmxUm.Name.ToString());
@@ -58,6 +56,110 @@ namespace Test
                 AssertEqual(pmx.BoneList, pmxUm.BoneList);
                 AssertEqual(pmx.MorphList, pmxUm.MorphList);
                 AssertEqual(pmx.DisplayFrameList, pmxUm.DisplayFrameList);
+                AssertEqual(pmx.RigidBodyList, pmxUm.RigidBodyList);
+                AssertEqual(pmx.JointList, pmxUm.JointList);
+                AssertEqual(pmx.SoftBodyList, pmxUm.SoftBodyList);
+            }
+        }
+
+        private void AssertEqual(ReadOnlyMemory<MMDTools.SoftBody> softBodyList1, MMDTools.Unmanaged.ReadOnlyRawArray<MMDTools.Unmanaged.SoftBody> softbodyList2)
+        {
+            var sbl1 = softBodyList1.Span;
+            var sbl2 = softbodyList2.AsSpan();
+            Assert.Equal(sbl1.Length, sbl2.Length);
+            for(int i = 0; i < sbl1.Length; i++) {
+                Assert.True(StructEqual(sbl1[i].AeroModel, sbl2[i].AeroModel));
+
+                var arb1 = sbl1[i].AnchorRigidBodies.Span;
+                var arb2 = sbl2[i].AnchorRigidBodies.AsSpan();
+                Assert.Equal(arb1.Length, arb2.Length);
+                for(int j = 0; j < arb1.Length; j++) {
+                    Assert.True(StructEqual(arb1[j], arb2[j]));
+                }
+                Assert.True(StructEqual(sbl1[i].BLinkDistance, sbl2[i].BLinkDistance));
+                Assert.True(StructEqual(sbl1[i].Cluster.SKHR_CL, sbl2[i].Cluster.SKHR_CL));
+                Assert.True(StructEqual(sbl1[i].Cluster.SK_SPLT_CL, sbl2[i].Cluster.SK_SPLT_CL));
+                Assert.True(StructEqual(sbl1[i].Cluster.SRHR_CL, sbl2[i].Cluster.SRHR_CL));
+                Assert.True(StructEqual(sbl1[i].Cluster.SR_SPLT_CL, sbl2[i].Cluster.SR_SPLT_CL));
+                Assert.True(StructEqual(sbl1[i].Cluster.SSHR_CL, sbl2[i].Cluster.SSHR_CL));
+                Assert.True(StructEqual(sbl1[i].Cluster.SS_SPLT_CL, sbl2[i].Cluster.SS_SPLT_CL));
+                Assert.True(StructEqual(sbl1[i].ClusterCount, sbl2[i].ClusterCount));
+                Assert.True(StructEqual(sbl1[i].CollisionMargin, sbl2[i].CollisionMargin));
+                Assert.True(StructEqual(sbl1[i].Config.AHR, sbl2[i].Config.AHR));
+                Assert.True(StructEqual(sbl1[i].Config.CHR, sbl2[i].Config.CHR));
+                Assert.True(StructEqual(sbl1[i].Config.DF, sbl2[i].Config.DF));
+                Assert.True(StructEqual(sbl1[i].Config.DG, sbl2[i].Config.DG));
+                Assert.True(StructEqual(sbl1[i].Config.DP, sbl2[i].Config.DP));
+                Assert.True(StructEqual(sbl1[i].Config.KHR, sbl2[i].Config.KHR));
+                Assert.True(StructEqual(sbl1[i].Config.LF, sbl2[i].Config.LF));
+                Assert.True(StructEqual(sbl1[i].Config.MT, sbl2[i].Config.MT));
+                Assert.True(StructEqual(sbl1[i].Config.PR, sbl2[i].Config.PR));
+                Assert.True(StructEqual(sbl1[i].Config.SHR, sbl2[i].Config.SHR));
+                Assert.True(StructEqual(sbl1[i].Config.VC, sbl2[i].Config.VC));
+                Assert.True(StructEqual(sbl1[i].Config.VCF, sbl2[i].Config.VCF));
+                Assert.True(StructEqual(sbl1[i].Group, sbl2[i].Group));
+                Assert.True(StructEqual(sbl1[i].GroupTarget, sbl2[i].GroupTarget));
+                Assert.True(StructEqual(sbl1[i].Iteration.C_IT, sbl2[i].Iteration.C_IT));
+                Assert.True(StructEqual(sbl1[i].Iteration.D_IT, sbl2[i].Iteration.D_IT));
+                Assert.True(StructEqual(sbl1[i].Iteration.P_IT, sbl2[i].Iteration.P_IT));
+                Assert.True(StructEqual(sbl1[i].Iteration.V_IT, sbl2[i].Iteration.V_IT));
+                Assert.True(StructEqual(sbl1[i].Material.AST, sbl2[i].Material.AST));
+                Assert.True(StructEqual(sbl1[i].Material.LST, sbl2[i].Material.LST));
+                Assert.True(StructEqual(sbl1[i].Material.VST, sbl2[i].Material.VST));
+                Assert.True(StructEqual(sbl1[i].Mode, sbl2[i].Mode));
+                Assert.Equal(sbl1[i].Name, sbl2[i].Name.ToString());
+                Assert.Equal(sbl1[i].NameEnglish, sbl2[i].NameEnglish.ToString());
+                Assert.True(sbl1[i].PinnedVertex.Span.SequenceEqual(sbl2[i].PinnedVertex.AsSpan()));
+                Assert.True(StructEqual(sbl1[i].Shape, sbl2[i].Shape));
+                Assert.True(StructEqual(sbl1[i].TargetMaterial, sbl2[i].TargetMaterial));
+                Assert.True(StructEqual(sbl1[i].TotalMass, sbl2[i].TotalMass));
+            }
+        }
+
+        private void AssertEqual(ReadOnlyMemory<MMDTools.Joint> jointList1, MMDTools.Unmanaged.ReadOnlyRawArray<MMDTools.Unmanaged.Joint> jointList2)
+        {
+            var jl1 = jointList1.Span;
+            var jl2 = jointList2.AsSpan();
+            Assert.Equal(jl1.Length, jl2.Length);
+            for(int i = 0; i < jl1.Length; i++) {
+                Assert.Equal(jl1[i].Name, jl2[i].Name.ToString());
+                Assert.Equal(jl1[i].NameEnglish, jl2[i].NameEnglish.ToString());
+                Assert.True(StructEqual(jl1[i].Position, jl2[i].Position));
+                Assert.True(StructEqual(jl1[i].RigidBody1, jl2[i].RigidBody1));
+                Assert.True(StructEqual(jl1[i].RigidBody2, jl2[i].RigidBody2));
+                Assert.True(StructEqual(jl1[i].RotationRadian, jl2[i].RotationRadian));
+                Assert.True(StructEqual(jl1[i].RotationRadianMaxLimit, jl2[i].RotationRadianMaxLimit));
+                Assert.True(StructEqual(jl1[i].RotationRadianMinLimit, jl2[i].RotationRadianMinLimit));
+                Assert.True(StructEqual(jl1[i].RotationSpring, jl2[i].RotationSpring));
+                Assert.True(StructEqual(jl1[i].TranslationMaxLimit, jl2[i].TranslationMaxLimit));
+                Assert.True(StructEqual(jl1[i].TranslationMinLimit, jl2[i].TranslationMinLimit));
+                Assert.True(StructEqual(jl1[i].TranslationSpring, jl2[i].TranslationSpring));
+                Assert.True(StructEqual(jl1[i].Type, jl2[i].Type));
+            }
+        }
+
+        private void AssertEqual(ReadOnlyMemory<MMDTools.RigidBody> rigidBodyList1, MMDTools.Unmanaged.ReadOnlyRawArray<MMDTools.Unmanaged.RigidBody> rigidBodyList2)
+        {
+            var rbl1 = rigidBodyList1.Span;
+            var rbl2 = rigidBodyList2.AsSpan();
+            Assert.Equal(rbl1.Length, rbl2.Length);
+            for(int i = 0; i < rbl1.Length; i++) {
+                Assert.True(StructEqual(rbl1[i].Bone, rbl2[i].Bone));
+                Assert.True(StructEqual(rbl1[i].Friction, rbl2[i].Friction));
+                Assert.True(StructEqual(rbl1[i].Group, rbl2[i].Group));
+                Assert.True(StructEqual(rbl1[i].GroupTarget, rbl2[i].GroupTarget));
+                Assert.True(StructEqual(rbl1[i].HasBone, rbl2[i].HasBone));
+                Assert.True(StructEqual(rbl1[i].Mass, rbl2[i].Mass));
+                Assert.Equal(rbl1[i].Name, rbl2[i].Name.ToString());
+                Assert.Equal(rbl1[i].NameEnglish, rbl2[i].NameEnglish.ToString());
+                Assert.True(StructEqual(rbl1[i].PhysicsType, rbl2[i].PhysicsType));
+                Assert.True(StructEqual(rbl1[i].Position, rbl2[i].Position));
+                Assert.True(StructEqual(rbl1[i].Recoil, rbl2[i].Recoil));
+                Assert.True(StructEqual(rbl1[i].RotationAttenuation, rbl2[i].RotationAttenuation));
+                Assert.True(StructEqual(rbl1[i].RotationRadian, rbl2[i].RotationRadian));
+                Assert.True(StructEqual(rbl1[i].Shape, rbl2[i].Shape));
+                Assert.True(StructEqual(rbl1[i].Size, rbl2[i].Size));
+                Assert.True(StructEqual(rbl1[i].TranslationAttenuation, rbl2[i].TranslationAttenuation));
             }
         }
 
@@ -288,8 +390,10 @@ namespace Test
         private static unsafe bool StructEqual<T1, T2>(T1 v1, T2 v2) where T1 : unmanaged
                                                                      where T2 : unmanaged
         {
-            var a = sizeof(T1) == sizeof(T2);
-            return EqualityComparer<T1>.Default.Equals(v1, Unsafe.As<T2, T1>(ref v2));
+            if(sizeof(T1) != sizeof(T2)) { return false; }
+            var s1 = new Span<byte>(&v1, sizeof(T1));
+            var s2 = new Span<byte>(&v2, sizeof(T2));
+            return s1.SequenceEqual(s2);
         }
     }
 }
