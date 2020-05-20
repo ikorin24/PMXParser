@@ -15,7 +15,7 @@ namespace MMDTools.Unmanaged
         // RawArray, DisposableRawArray と同じメモリレイアウトでなければならない
 
         private readonly IntPtr _ptr;
-        public readonly int _length;
+        private readonly int _length;
 
         public readonly int Length => _length;
         public ref readonly T this[int index]
