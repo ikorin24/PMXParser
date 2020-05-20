@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,14 +10,14 @@ namespace MMDTools.Unmanaged
     [DebuggerTypeProxy(typeof(RawArrayDebuggerTypeProxy<>))]
     [DebuggerDisplay("RawArray<{typeof(T).Name}>[{Length}]")]
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe readonly struct RawArray<T> : IDisposable where T : unmanaged
+    internal unsafe readonly struct RawArray<T> : IDisposable, IEquatable<RawArray<T>> where T : unmanaged
     {
         // DisposableRawArray, ReadOnlyRawArray と同じメモリレイアウトにしなければならない
 
         private readonly IntPtr _ptr;
-        public readonly int _length;
+        private readonly int _length;
 
-        public int Length => _length;
+        public readonly int Length => _length;
 
         public ref T this[int index]
         {
@@ -67,6 +68,19 @@ namespace MMDTools.Unmanaged
             if((uint)start >= (uint)_length) { throw new ArgumentOutOfRangeException(); }
             if((uint)start + (uint)length >= (uint)_length) { throw new ArgumentOutOfRangeException(); }
             return new Span<T>((T*)_ptr + start, length);
+        }
+
+        public override bool Equals(object? obj) => obj is RawArray<T> array && Equals(array);
+
+        public bool Equals(RawArray<T> other)
+        {
+            return _ptr == other._ptr &&
+                   _length == other._length;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_ptr, _length);
         }
 
         public static implicit operator ReadOnlyRawArray<T>(RawArray<T> array) => Unsafe.As<RawArray<T>, ReadOnlyRawArray<T>>(ref array);

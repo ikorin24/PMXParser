@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,7 +10,7 @@ namespace MMDTools.Unmanaged
 {
     [DebuggerDisplay("{ToString()}")]
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe readonly struct RawString : IDisposable
+    internal unsafe readonly struct RawString : IDisposable, IEquatable<RawString>
     {
         private readonly IntPtr _headPointer;
         public readonly int ByteLength;
@@ -68,6 +69,17 @@ namespace MMDTools.Unmanaged
             }
             Unsafe.AsRef(ByteLength) = 0;
         }
+
+        public override bool Equals(object? obj) => obj is RawString @string && Equals(@string);
+
+        public bool Equals(RawString other)
+        {
+            return _headPointer == other._headPointer &&
+                   ByteLength == other.ByteLength &&
+                   Encoding == other.Encoding;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(_headPointer, ByteLength, Encoding);
 
         public static implicit operator ReadOnlyRawString(RawString rawString) => new ReadOnlyRawString(rawString);
     }

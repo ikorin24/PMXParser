@@ -7,7 +7,7 @@ using System.Text;
 namespace MMDTools.Unmanaged
 {
     [DebuggerDisplay("{ToString()}")]
-    public unsafe readonly struct ReadOnlyRawString
+    public unsafe readonly struct ReadOnlyRawString : IEquatable<ReadOnlyRawString>
     {
         private readonly RawString _rawString;
         public readonly int ByteLength => _rawString.ByteLength;
@@ -23,5 +23,11 @@ namespace MMDTools.Unmanaged
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString() => _rawString.ToString();
+
+        public override bool Equals(object? obj) => obj is ReadOnlyRawString str && Equals(str);
+
+        public bool Equals(ReadOnlyRawString other) => _rawString.Equals(other._rawString);
+
+        public override int GetHashCode() => HashCode.Combine(_rawString);
     }
 }

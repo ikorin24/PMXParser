@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,7 +10,7 @@ namespace MMDTools.Unmanaged
     [DebuggerTypeProxy(typeof(ReadOnlyRawArrayDebuggerTypeProxy<>))]
     [DebuggerDisplay("ReadOnlyRawArray<{typeof(T).Name}>[{Length}]")]
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe readonly struct ReadOnlyRawArray<T> where T : unmanaged
+    public unsafe readonly struct ReadOnlyRawArray<T> : IEquatable<ReadOnlyRawArray<T>> where T : unmanaged
     {
         // RawArray, DisposableRawArray と同じメモリレイアウトでなければならない
 
@@ -32,6 +33,16 @@ namespace MMDTools.Unmanaged
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<T> AsSpan(int start, int length) => ((RawArray<T>)this).AsSpan(start, length);
+
+        public override bool Equals(object? obj) => obj is ReadOnlyRawArray<T> array && Equals(array);
+
+        public bool Equals(ReadOnlyRawArray<T> other)
+        {
+            return _ptr == other._ptr &&
+                   _length == other._length;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(_ptr, _length);
     }
 
     internal sealed class ReadOnlyRawArrayDebuggerTypeProxy<T> where T : unmanaged

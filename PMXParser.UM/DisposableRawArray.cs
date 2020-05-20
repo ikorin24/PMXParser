@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,12 +10,13 @@ namespace MMDTools.Unmanaged
     [DebuggerTypeProxy(typeof(DisposableRawArrayDebuggerTypeProxy<>))]
     [DebuggerDisplay("DisposableRawArray<{typeof(T).Name}>[{Length}]")]
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe readonly struct DisposableRawArray<T> : IDisposable where T : unmanaged, IDisposable
+    internal unsafe readonly struct DisposableRawArray<T> : IDisposable, IEquatable<DisposableRawArray<T>> where T : unmanaged, IDisposable
     {
         // RawArray, ReadOnlyRawArray と同じメモリレイアウトにしなければならない
 
         private readonly IntPtr _ptr;
-        public readonly int Length;
+        private readonly int _length;
+        public readonly int Length => _length;
 
         public ref T this[int index]
         {
@@ -33,7 +35,7 @@ namespace MMDTools.Unmanaged
             var byteLen = sizeof(T) * length;
             _ptr = Marshal.AllocHGlobal(byteLen);
             new Span<T>((T*)_ptr, length).Fill(default);
-            Length = length;
+            _length = length;
             UnmanagedMemoryChecker.RegisterNewAllocatedBytes(byteLen);
         }
 
@@ -76,6 +78,16 @@ namespace MMDTools.Unmanaged
             ref var this_ = ref Unsafe.AsRef(this);
             return Unsafe.As<DisposableRawArray<T>, ReadOnlyRawArray<TTo>>(ref this_);
         }
+
+        public override bool Equals(object? obj) => obj is DisposableRawArray<T> array && Equals(array);
+
+        public bool Equals(DisposableRawArray<T> other)
+        {
+            return _ptr == other._ptr &&
+                   _length == other._length;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(_ptr, _length);
     }
 
     internal sealed class DisposableRawArrayDebuggerTypeProxy<T> where T : unmanaged, IDisposable
