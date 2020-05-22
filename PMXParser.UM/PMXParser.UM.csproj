@@ -6,6 +6,21 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>MMDTools.Unmanaged</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>ikorin24</Authors>
+    <Company>ikorin24</Company>
+    <Copyright>Copyright © 2020 ikorin24</Copyright>
+    <Description>PMX file parser library</Description>
+    <RepositoryUrl>https://github.com/ikorin24/PMXParser.git</RepositoryUrl>
+    <Product>PMXParser.UM</Product>
+    <PackageId>PMXParser.UM</PackageId>
+    <PackageTags />
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RepositoryType>git</RepositoryType>
+    
+    <!--<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>-->
   </PropertyGroup>
 
   <ItemGroup>
