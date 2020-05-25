@@ -1,13 +1,13 @@
 # PMX Parser
 
 [![GitHub license](https://img.shields.io/github/license/ikorin24/PMXParser?color=967CFF)](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)
-[![nuget](https://img.shields.io/badge/nuget-v1.0.1-967CFF)](https://www.nuget.org/packages/PMXParser)
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0_rc-967CFF)](https://www.nuget.org/packages/PMXParser)
 
 [日本語](https://github.com/ikorin24/PMXParser/blob/master/README_ja.md)
 
 ## What is This ?
 
-PMX file parser library of C# (.NET Standard 2.1 / 2.0). PMX file is MMD (*Miku Miku Dance*) model file.
+PMX file parser library of C# (.NET 2.0). PMX file is MMD (*Miku Miku Dance*) model file.
 
 This parser parses PMX file into structual C# class.
 
@@ -32,7 +32,7 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 ## Requirements and Dependencies (On Building)
 
-- .NET Standard 2.1 / 2.0
+- .NET Standard 2.0
 - C# 8.0
 - `dotnet` command (.NET Core CLI Tools)
 
@@ -56,7 +56,6 @@ $ git clone https://github.com/ikorin24/PMXParser.git
 $ cd PMXParser
 $ dotnet build PMXParser/PMXParser.csproj -c Release
 
-# ---> PMXParser/bin/Release/netstandard2.1/PMXParser.dll
 # ---> PMXParser/bin/Release/netstandard2.0/PMXParser.dll
 ```
 
@@ -106,3 +105,11 @@ Bug fix and performance improvement a little
 
 - Fix a big bug.
     - Parse incorrect value in case of `byteSize` is not 4 in `NextDataOfSize` method.
+
+### 2020/05/25 ver 1.1.0-rc
+
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0_rc-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.0-rc)
+
+- Add parser for unmanaged memory version. (in namespace `MMDTools.Unmanaged`)
+- Fix a bug in multi-thread.
+- Fix some other bugs.

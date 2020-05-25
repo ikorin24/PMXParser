@@ -1,13 +1,13 @@
 # PMX Parser
 
 [![GitHub license](https://img.shields.io/github/license/ikorin24/PMXParser?color=967CFF)](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)
-[![nuget](https://img.shields.io/badge/nuget-v1.0.0-967CFF)](https://www.nuget.org/packages/PMXParser)
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0_rc-967CFF)](https://www.nuget.org/packages/PMXParser)
 
 [English](https://github.com/ikorin24/PMXParser/blob/master/README.md)
 
 ## これは何？
 
-PMX ファイルの C# (.NET Standard 2.1 / 2.0) パーサーライブラリです。
+PMX ファイルの C# (.NET Standard 2.0) パーサーライブラリです。
 
 PMX ファイルは MMD (*Miku Miku Dance*) のモデルデータです。
 
@@ -34,7 +34,7 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 ## 必要環境と依存関係 (ビルド時)
 
-- .NET Standard 2.1 / 2.0
+- .NET Standard 2.0
 - C# 8.0
 - `dotnet` コマンド (.NET Core CLI ツール)
 
@@ -58,7 +58,6 @@ $ git clone https://github.com/ikorin24/PMXParser.git
 $ cd PMXParser
 $ dotnet build PMXParser/PMXParser.csproj -c Release
 
-# ---> PMXParser/bin/Release/netstandard2.1/PMXParser.dll
 # ---> PMXParser/bin/Release/netstandard2.0/PMXParser.dll
 ```
 
@@ -106,3 +105,11 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 
 - 大きなバグ修正
     - `NextDataOfSize`メソッドの`byteSize`が4でない場合、正しくない値を読み取っていた
+
+### 2020/05/25 ver 1.1.0-rc
+
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0_rc-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.0-rc)
+
+- アンマネージドメモリ版のパーサを追加。 (`MMDTools.Unmanaged`ネームスペース)
+- マルチスレッドでのバグを修正
+- その他バグ修正
