@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMXParser", "PMXParser\PMXP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{61065D56-65C2-419D-91C9-5B9D49A7C18B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMXParser.UM", "PMXParser.UM\PMXParser.UM.csproj", "{AD783164-260C-48E9-B62E-2A8AD11A44E9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{61065D56-65C2-419D-91C9-5B9D49A7C18B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61065D56-65C2-419D-91C9-5B9D49A7C18B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61065D56-65C2-419D-91C9-5B9D49A7C18B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AD783164-260C-48E9-B62E-2A8AD11A44E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD783164-260C-48E9-B62E-2A8AD11A44E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD783164-260C-48E9-B62E-2A8AD11A44E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD783164-260C-48E9-B62E-2A8AD11A44E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
