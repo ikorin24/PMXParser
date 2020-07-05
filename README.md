@@ -7,7 +7,9 @@
 
 ## What is This ?
 
-PMX file parser library of C# (.NET 2.0). PMX file is MMD (*Miku Miku Dance*) model file.
+PMX file parser library of C# (.NET 2.0), which is thread-safe and zero-allocation.
+
+PMX file is MMD (*Miku Miku Dance*) model file.
 
 This parser parses PMX file into structual C# class.
 
@@ -30,6 +32,25 @@ using(var stream = System.IO.File.OpenRead(fileName))
 }
 ```
 
+### New Feature of ver 1.1.0 rc
+
+- `MMDTools.Unmanaged.PMXParser`
+
+You can use it instead of `MMDTools.PMXParser`.
+
+`MMDTools.Unmanaged.PMXParser` parses data into `MMDTools.Unmanaged.PMXObject`, as `MMDTools.PMXParser` do that into `MMDTools.PMXObject`.
+
+`MMDTools.Unmanaged.PMXObject` has all data in unmanaged memory,
+and it can be released explicitly by calling `Dispose()`.
+
+```cs
+using(var stream = System.IO.File.OpenRead(fileName))
+{
+    using var pmx = MMDTools.Unmanaged.PMXParser(stream);
+    Console.WriteLine(pmx.Name.ToString());
+}
+```
+
 ## Requirements and Dependencies (On Building)
 
 - .NET Standard 2.0
@@ -44,7 +65,7 @@ https://www.nuget.org/packages/PMXParser
 
 ```sh
 # nuget package manager
-PM> Install-Package PMXParser
+PM> Install-Package PMXParser -Version 1.1.0-rc
 ```
 
 ## Building

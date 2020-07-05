@@ -7,7 +7,7 @@
 
 ## これは何？
 
-PMX ファイルの C# (.NET Standard 2.0) パーサーライブラリです。
+PMX ファイルの C# (.NET Standard 2.0) パーサーライブラリで、スレッドセーフかつゼロアロケーションなパーサーです。
 
 PMX ファイルは MMD (*Miku Miku Dance*) のモデルデータです。
 
@@ -32,6 +32,26 @@ using(var stream = System.IO.File.OpenRead(fileName))
 }
 ```
 
+### ver 1.1.0 rc での追加機能
+
+- `MMDTools.Unmanaged.PMXParser`
+
+`MMDTools.PMXParser`の代わりに使用できます。
+
+`MMDTools.PMXParser`は`MMDTools.PMXObject`にデータを読み込みますが、
+`MMDTools.Unmanaged.PMXParser`は`MMDTools.Unmanaged.PMXObject`を生成します。
+
+生成された`MMDTools.Unmanaged.PMXObject`はデータを unmanaged メモリに保持しており、
+`Dispose()`を呼ぶことで全てのデータを明示的に解放できます。
+
+```cs
+using(var stream = System.IO.File.OpenRead(fileName))
+{
+    using var pmx = MMDTools.Unmanaged.PMXParser(stream);
+    Console.WriteLine(pmx.Name.ToString());
+}
+```
+
 ## 必要環境と依存関係 (ビルド時)
 
 - .NET Standard 2.0
@@ -46,7 +66,7 @@ https://www.nuget.org/packages/PMXParser
 
 ```sh
 # nuget パッケージマネージャー
-PM> Install-Package PMXParser
+PM> Install-Package PMXParser -Version 1.1.0-rc
 ```
 
 ## ビルド方法
