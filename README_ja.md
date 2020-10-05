@@ -1,7 +1,7 @@
 # PMX Parser
 
 [![GitHub license](https://img.shields.io/github/license/ikorin24/PMXParser?color=967CFF)](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)
-[![nuget](https://img.shields.io/badge/nuget-v1.1.0_rc-967CFF)](https://www.nuget.org/packages/PMXParser)
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser)
 
 [English](https://github.com/ikorin24/PMXParser/blob/master/README.md)
 
@@ -32,7 +32,7 @@ using(var stream = System.IO.File.OpenRead(fileName))
 }
 ```
 
-### ver 1.1.0 rc での追加機能
+### ver 1.1.0 の新機能
 
 - `MMDTools.Unmanaged.PMXParser`
 
@@ -46,8 +46,8 @@ using(var stream = System.IO.File.OpenRead(fileName))
 
 ```cs
 using(var stream = System.IO.File.OpenRead(fileName))
+using(var pmx = MMDTools.Unmanaged.PMXParser(stream))
 {
-    using var pmx = MMDTools.Unmanaged.PMXParser(stream);
     Console.WriteLine(pmx.Name.ToString());
 }
 ```
@@ -66,7 +66,7 @@ https://www.nuget.org/packages/PMXParser
 
 ```sh
 # nuget パッケージマネージャー
-PM> Install-Package PMXParser -Version 1.1.0-rc
+PM> Install-Package PMXParser -Version 1.1.0
 ```
 
 ## ビルド方法
@@ -133,3 +133,7 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 - アンマネージドメモリ版のパーサを追加。 (`MMDTools.Unmanaged`ネームスペース)
 - マルチスレッドでのバグを修正
 - その他バグ修正
+
+### 2020/10/06 ver 1.1.0
+
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.0)

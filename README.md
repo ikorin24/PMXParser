@@ -1,7 +1,7 @@
 # PMX Parser
 
 [![GitHub license](https://img.shields.io/github/license/ikorin24/PMXParser?color=967CFF)](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)
-[![nuget](https://img.shields.io/badge/nuget-v1.1.0_rc-967CFF)](https://www.nuget.org/packages/PMXParser)
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser)
 
 [日本語](https://github.com/ikorin24/PMXParser/blob/master/README_ja.md)
 
@@ -32,7 +32,7 @@ using(var stream = System.IO.File.OpenRead(fileName))
 }
 ```
 
-### New Feature of ver 1.1.0 rc
+### New Feature of ver 1.1.0
 
 - `MMDTools.Unmanaged.PMXParser`
 
@@ -45,8 +45,8 @@ and it can be released explicitly by calling `Dispose()`.
 
 ```cs
 using(var stream = System.IO.File.OpenRead(fileName))
+using(var pmx = MMDTools.Unmanaged.PMXParser(stream))
 {
-    using var pmx = MMDTools.Unmanaged.PMXParser(stream);
     Console.WriteLine(pmx.Name.ToString());
 }
 ```
@@ -65,7 +65,7 @@ https://www.nuget.org/packages/PMXParser
 
 ```sh
 # nuget package manager
-PM> Install-Package PMXParser -Version 1.1.0-rc
+PM> Install-Package PMXParser -Version 1.1.0
 ```
 
 ## Building
@@ -134,3 +134,7 @@ Bug fix and performance improvement a little
 - Add parser for unmanaged memory version. (in namespace `MMDTools.Unmanaged`)
 - Fix a bug in multi-thread.
 - Fix some other bugs.
+
+### 2020/10/06 ver 1.1.0
+
+[![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.0)
