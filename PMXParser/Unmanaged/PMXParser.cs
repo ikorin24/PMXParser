@@ -1,8 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.IO;
-using System.Text;
-using MMDTools;
 
 namespace MMDTools.Unmanaged
 {
@@ -18,6 +16,7 @@ namespace MMDTools.Unmanaged
 
         public static PMXObject Parse(Stream stream)
         {
+            if(stream is null) { throw new ArgumentNullException(nameof(stream)); }
             PMXObject pmx = default!;
             try {
                 pmx = new PMXObject();
@@ -37,7 +36,7 @@ namespace MMDTools.Unmanaged
             }
             catch(Exception ex) {
                 pmx?.Dispose();
-                throw new Exception("File parsing failed.", ex);
+                throw new InvalidDataException("File parsing failed.", ex);
             }
             finally {
                 StreamHelper.ReleaseBuffer();

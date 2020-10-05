@@ -1,11 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
-using System.Buffers;
 
 namespace MMDTools
 {
@@ -28,6 +24,7 @@ namespace MMDTools
         /// <returns>PMX file version</returns>
         public static PMXVersion GetVersion(Stream stream)
         {
+            if(stream is null) { throw new ArgumentNullException(nameof(stream)); }
             try {
                 stream.NextBytes(4, out var magicWord);
                 PMXValidator.ValidateMagicWord(magicWord);
@@ -57,6 +54,7 @@ namespace MMDTools
         /// <returns>PMX object</returns>
         public static PMXObject Parse(Stream stream)
         {
+            if(stream is null) { throw new ArgumentNullException(nameof(stream)); }
             try {
                 var pmx = new PMXObject();
                 ParseHeader(stream, out var localInfo, pmx);
