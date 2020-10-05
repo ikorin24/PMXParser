@@ -21,7 +21,14 @@ namespace MMDTools.Unmanaged
         public ref readonly T this[int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref ((T*)_ptr)[index];
+            get
+            {
+                if((uint)index >= (uint)_length) {
+                    ThrowOutOfRange();
+                    static void ThrowOutOfRange() => throw new IndexOutOfRangeException(nameof(index));
+                }
+                return ref ((T*)_ptr)[index];
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
