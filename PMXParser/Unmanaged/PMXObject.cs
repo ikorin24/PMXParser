@@ -13,6 +13,7 @@ namespace MMDTools.Unmanaged
         /// <summary>pointer to <see cref="PMXObject_"/></summary>
         private readonly IntPtr _ptr;
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         internal PMXObject_* Entity => (PMXObject_*)_ptr;
 
         /// <summary>Get PMX file version</summary>
