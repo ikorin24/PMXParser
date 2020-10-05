@@ -58,7 +58,7 @@ namespace MMDTools.Unmanaged
         public ReadOnlyRawArray<SoftBody> SoftBodyList => Entity->SoftBodyList.AsReadOnly<SoftBody>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe PMXObject()
+        internal unsafe PMXObject()
         {
             var ptr = Marshal.AllocHGlobal(sizeof(PMXObject_));
 
