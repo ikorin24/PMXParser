@@ -1,13 +1,13 @@
 # PMX Parser
 
 [![GitHub license](https://img.shields.io/github/license/ikorin24/PMXParser?color=967CFF)](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)
-[![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser)
+[![nuget](https://img.shields.io/badge/nuget-v1.1.1-967CFF)](https://www.nuget.org/packages/PMXParser)
 
 [日本語](https://github.com/ikorin24/PMXParser/blob/master/README_ja.md)
 
 ## What is This ?
 
-PMX file parser library of C# (.NET 2.0), which is thread-safe and zero-allocation.
+PMX file parser library of C#, which is thread-safe and zero-allocation.
 
 PMX file is MMD (*Miku Miku Dance*) model file.
 
@@ -53,7 +53,6 @@ using(var pmx = MMDTools.Unmanaged.PMXParser(stream))
 
 ## Requirements and Dependencies (On Building)
 
-- .NET Standard 2.0
 - C# 8.0
 - `dotnet` command (.NET Core CLI Tools)
 
@@ -65,7 +64,7 @@ https://www.nuget.org/packages/PMXParser
 
 ```sh
 # nuget package manager
-PM> Install-Package PMXParser -Version 1.1.0
+PM> Install-Package PMXParser -Version 1.1.1
 ```
 
 ## Building
@@ -138,3 +137,10 @@ Bug fix and performance improvement a little
 ### 2020/10/06 ver 1.1.0
 
 [![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.0)
+
+### 2020/12/20 ver 1.1.1
+
+[![nuget](https://img.shields.io/badge/nuget-v1.1.1-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.1)
+
+- Fix bags
+- Add target frameworks (netstandard2.1, netcoreapp3.1, net5.0)

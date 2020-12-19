@@ -7,7 +7,7 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Copyright>Copyright © 2020 ikorin24</Copyright>
     <Description>PMX file parser library</Description>
     <RepositoryUrl>https://github.com/ikorin24/PMXParser.git</RepositoryUrl>

@@ -1,13 +1,13 @@
 # PMX Parser
 
 [![GitHub license](https://img.shields.io/github/license/ikorin24/PMXParser?color=967CFF)](https://github.com/ikorin24/PMXParser/blob/master/LICENSE)
-[![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser)
+[![nuget](https://img.shields.io/badge/nuget-v1.1.1-967CFF)](https://www.nuget.org/packages/PMXParser)
 
 [English](https://github.com/ikorin24/PMXParser/blob/master/README.md)
 
 ## これは何？
 
-PMX ファイルの C# (.NET Standard 2.0) パーサーライブラリで、スレッドセーフかつゼロアロケーションなパーサーです。
+PMX ファイルの C# パーサーライブラリで、スレッドセーフかつゼロアロケーションなパーサーです。
 
 PMX ファイルは MMD (*Miku Miku Dance*) のモデルデータです。
 
@@ -54,7 +54,6 @@ using(var pmx = MMDTools.Unmanaged.PMXParser(stream))
 
 ## 必要環境と依存関係 (ビルド時)
 
-- .NET Standard 2.0
 - C# 8.0
 - `dotnet` コマンド (.NET Core CLI ツール)
 
@@ -66,7 +65,7 @@ https://www.nuget.org/packages/PMXParser
 
 ```sh
 # nuget パッケージマネージャー
-PM> Install-Package PMXParser -Version 1.1.0
+PM> Install-Package PMXParser -Version 1.1.1
 ```
 
 ## ビルド方法
@@ -137,3 +136,10 @@ http://kkhk22.seesaa.net/category/14045227-1.html
 ### 2020/10/06 ver 1.1.0
 
 [![nuget](https://img.shields.io/badge/nuget-v1.1.0-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.0)
+
+### 2020/12/20 ver 1.1.1
+
+[![nuget](https://img.shields.io/badge/nuget-v1.1.1-967CFF)](https://www.nuget.org/packages/PMXParser/1.1.1)
+
+- バグ修正
+- ターゲットフレームワークを追加 (netstandard2.1, netcoreapp3.1, net5.0)
